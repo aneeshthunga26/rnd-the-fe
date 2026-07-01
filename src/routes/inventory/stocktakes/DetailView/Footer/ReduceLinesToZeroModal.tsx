@@ -5,7 +5,7 @@ import {
   getReasonOptionTypes,
   ReasonOptionsSearchInput,
   type ReasonOptionRow,
-} from "../../../../../components/inputs";
+} from "../../../../../system/ReasonOption";
 import { useI18n } from "../../../../../intl";
 import type { StocktakeLine } from "../../api";
 

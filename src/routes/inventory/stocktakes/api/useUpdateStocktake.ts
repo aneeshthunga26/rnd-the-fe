@@ -3,15 +3,19 @@ import type { UpdateStocktakePatch } from "./operations";
 import { useStocktakeApi } from "./useStocktakeApi";
 
 /**
- * Update the stocktake document. Broadly invalidates `base()` on success so the
- * document + lines refetch (mirrors open-mSupply). Returns the raw union result
- * so callers can branch on `__typename` for the finalise error flow.
+ * Update the stocktake document. A field/status edit only affects that
+ * stocktake's detail and the lists, so we invalidate `detail(id)` + `list()`
+ * rather than the whole `base()` cache. Returns the raw union result so callers
+ * can branch on `__typename` for the finalise error flow.
  */
 export const useUpdateStocktake = () => {
   const api = useStocktakeApi();
   const queryClient = useQueryClient();
   return useMutation(() => ({
     mutationFn: (patch: UpdateStocktakePatch) => api.update(patch),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: api.keys.base() }),
+    onSuccess: (_result, patch) => {
+      queryClient.invalidateQueries({ queryKey: api.keys.detail(patch.id) });
+      queryClient.invalidateQueries({ queryKey: api.keys.list() });
+    },
   }));
 };

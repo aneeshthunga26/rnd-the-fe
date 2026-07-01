@@ -5,7 +5,8 @@ import { Button } from "../../../../../components/ui/Button";
 import { DeleteIcon, LocationIcon, LockIcon, ZeroIcon } from "../../../../../components/icons";
 import { useStocktakeLineError } from "../../../../../context/stocktakeLineError";
 import { useFormat, useI18n } from "../../../../../intl";
-import type { LocationRow, ReasonOptionRow } from "../../../../../components/inputs";
+import type { LocationRow } from "../../../../../system/Location";
+import type { ReasonOptionRow } from "../../../../../system/ReasonOption";
 import {
   type StocktakeDetail,
   type StocktakeLine,

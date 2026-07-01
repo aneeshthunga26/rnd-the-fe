@@ -1,16 +1,12 @@
 import { type Component, createMemo, createSignal, For, Show } from "solid-js";
 import { Modal } from "../../../../../components/ui/Modal";
 import { Button } from "../../../../../components/ui/Button";
-import {
-  DonorSearchInput,
-  getReasonOptionTypes,
-  LocationSearchInput,
-  ManufacturerSearchInput,
-  ReasonOptionsSearchInput,
-  StockItemSearchInput,
-  usePreferences,
-  VVMStatusSearchInput,
-} from "../../../../../components/inputs";
+import { DonorSearchInput, ManufacturerSearchInput } from "../../../../../system/Name";
+import { LocationSearchInput } from "../../../../../system/Location";
+import { getReasonOptionTypes, ReasonOptionsSearchInput } from "../../../../../system/ReasonOption";
+import { StockItemSearchInput } from "../../../../../system/Item";
+import { VVMStatusSearchInput } from "../../../../../system/VvmStatus";
+import { usePreferences } from "../../../../../preferences";
 import { useStocktakeLineError } from "../../../../../context/stocktakeLineError";
 import { stocktakeLineErrorMessage } from "../../../../../context/stocktakeLineError";
 import { useI18n } from "../../../../../intl";

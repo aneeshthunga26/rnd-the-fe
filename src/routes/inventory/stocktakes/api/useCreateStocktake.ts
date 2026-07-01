@@ -8,6 +8,6 @@ export const useCreateStocktake = () => {
   const queryClient = useQueryClient();
   return useMutation(() => ({
     mutationFn: (input: CreateStocktakeInput) => api.insertStocktake(input),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: api.keys.base() }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: api.keys.list() }),
   }));
 };

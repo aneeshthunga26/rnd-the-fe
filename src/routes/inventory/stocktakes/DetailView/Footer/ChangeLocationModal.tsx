@@ -1,7 +1,7 @@
 import { type Component, createMemo, createSignal, Show } from "solid-js";
 import { Modal } from "../../../../../components/ui/Modal";
 import { Button } from "../../../../../components/ui/Button";
-import { LocationSearchInput, type LocationRow } from "../../../../../components/inputs";
+import { LocationSearchInput, type LocationRow } from "../../../../../system/Location";
 import { useI18n } from "../../../../../intl";
 import type { StocktakeLine } from "../../api";
 

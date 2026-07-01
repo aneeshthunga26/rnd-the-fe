@@ -78,7 +78,12 @@ context). This edit is owned here too.
 3. **Externalise strings** via i18n's `t("namespaced.key")` (namespaces `label.* action.* message.* status.*`),
    adding keys to `src/intl/dictionaries/en.ts` (+ translations). Route titles: `routeMeta.ts` returns keys,
    translated in the AppBar/MobileHeader via `t`.
-4. **Every new/edited component obeys 1–3 from the start** (tell any future feature agents this).
+4. **Presentational vs domain placement.** `src/components/**` is **generic, presentational UI only** — no
+   gql.tada documents and no `useQuery`/`useMutation`. Domain/entity components that fetch data live in
+   `src/system/<Entity>/` (`Components/` + `api/{operations.ts,use<Entity>.ts,index.ts}` + `index.ts`);
+   cross-cutting non-entity hooks (e.g. `usePreferences`) live under their own top-level folder
+   (`src/preferences/`). See `CLAUDE.md` → "Components vs `system/` modules".
+5. **Every new/edited component obeys 1–4 from the start** (tell any future feature agents this).
 
 ## The component sweep (run once, after both infra)
 

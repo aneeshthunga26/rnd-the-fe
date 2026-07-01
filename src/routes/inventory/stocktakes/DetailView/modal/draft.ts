@@ -1,12 +1,9 @@
-import type {
-  CampaignRow,
-  ItemStockOnHandRow,
-  LocationRow,
-  NameRow,
-  ProgramRow,
-  ReasonOptionRow,
-  VvmStatusRow,
-} from "../../../../../components/inputs";
+import type { LocationRow } from "../../../../../system/Location";
+import type { NameRow } from "../../../../../system/Name";
+import type { CampaignRow, ProgramRow } from "../../../../../system/CampaignOrProgram";
+import type { ReasonOptionRow } from "../../../../../system/ReasonOption";
+import type { VvmStatusRow } from "../../../../../system/VvmStatus";
+import type { ItemStockOnHandRow } from "../../../../../system/Item";
 import type { StockLineForStocktake, StocktakeLine } from "../../api";
 
 /** The item shape a draft carries (compatible with item/stockLine/search sources). */
