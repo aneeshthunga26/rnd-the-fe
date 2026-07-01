@@ -21,24 +21,24 @@ When goals conflict, state the trade-off explicitly in code review or the PR —
 
 ## Stack (and why)
 
-> **Solid 2.0 is beta.** This is the one place we accept ecosystem risk. The TanStack Solid adapters
-> (`solid-table`, `solid-virtual`) **already support Solid 2.0**. Some other libraries (e.g. Kobalte)
-> still primarily target Solid **1.x** and may not yet be 2.0-compatible.
-> **Mitigation:** pin exact versions; if a core library breaks on 2.0, fall back to `solid-js@1.9.x`
-> (the patterns in `docs/solidjs/01`–`07` are identical; only `09` is 2.0-specific). Verify each new
-> dependency against the installed Solid major before adding it.
+> **We target stable Solid 1.x (`solid-js@^1.9`).** We tried Solid 2.0 (beta) and rolled back:
+> its reactive core was split into a separate `@solidjs/web` package and the `solid-js/store` /
+> `solid-js/web` subpaths were removed, which breaks ecosystem libraries that still import them
+> (TanStack `solid-virtual` imports `solid-js/store`; `solid-table` imports `solid-js/web`). Until
+> the ecosystem catches up, **stay on 1.x.** Verify each new dependency works on the installed
+> Solid version before adding it.
 
 | Concern | Choice | Rationale (vs goals) |
 |---------|--------|----------------------|
-| Framework | **Solid 2.0** (`solid-js@next`) | Fine-grained reactivity → perf + small runtime. Beta — see warning above. |
+| Framework | **Solid 1.x** (`solid-js@^1.9`) | Fine-grained reactivity → perf + small runtime. Stable, full ecosystem support. |
 | Build | **Vite** + `vite-plugin-solid` | Fast dev loop (velocity); tiny, tree-shaken output. |
 | Styling | **Tailwind v4** via `@tailwindcss/vite` (Oxide/Rust engine) | No runtime CSS cost; CSS-first `@theme` config; only used utilities ship. |
 | Routing | **`@solidjs/router`** | Tiny; gives us URL-as-state for filters (a stated goal in the reference journey). |
-| Table | **`@tanstack/solid-table`** | Headless (no styling bundle), fully typed, framework-native adapter. |
+| Table | **`@tanstack/solid-table`** (v8, stable) | Headless (no styling bundle), fully typed, framework-native adapter. Avoid the v9 beta — its API diverges from all the docs. |
 | Virtualization | **`@tanstack/solid-virtual`** | Required for large stocktake-line lists → perf. Virtualize rows from the start. |
 | GraphQL types | **`gql.tada`** + **`graphql-request`** | Full type inference straight from `server/schema.graphql` with **zero generated files** (velocity, maintainability); `graphql-request` is a ~tiny client (small bundle). Alternative if the editor plugin is a pain: graphql-codegen `client` preset. |
-| Data fetching | **Solid's own async** (`createResource` in 1.x / async `createMemo` in 2.0) | Built-in → no extra bundle. Only add `@tanstack/solid-query` if we genuinely need cross-route caching/dedup — justify it first. |
-| Headless UI | **Kobalte** (minimal surface) | Accessible, tree-shakeable; import only what needs a11y/focus management (Dialog, Combobox/Select, Checkbox, NumberField). Plain styled elements for the rest. `corvu` is the fallback. Check 2.0 compat. |
+| Data fetching | **Solid's own async** (`createResource` + `<Suspense>`) | Built-in → no extra bundle. Only add `@tanstack/solid-query` if we genuinely need cross-route caching/dedup — justify it first. |
+| Headless UI | **Kobalte** (minimal surface) | Accessible, tree-shakeable; import only what needs a11y/focus management (Dialog, Combobox/Select, Checkbox, NumberField). Plain styled elements for the rest. `corvu` is the fallback. |
 | Theming | **CSS variables + `data-theme`** on `<html>`, mapped through Tailwind `@theme`; a `ThemeProvider` context with a persisted signal | Zero-JS theme swap; instant; no flash. |
 | i18n | **`@solid-primitives/i18n`** | Tiny, reactive, typed dictionaries. Drive `lang`/`dir` on `<html>` from the locale signal. |
 | RTL/LTR | `dir` attribute + **logical CSS** (Tailwind `ps-/pe-/ms-/me-`, `start`/`end`) | Layout mirrors automatically; never hardcode left/right. |
@@ -52,7 +52,7 @@ Default answer is **no**. Before adding any dependency, weigh it against the fiv
 1. Can the platform (`Intl`, `fetch`, CSS, web APIs) or an existing dep already do this?
 2. What does it cost the **bundle** (check bundlephobia / the actual built size)?
 3. Is it **headless / tree-shakeable**, or does it drag in styling/runtime we don't control?
-4. Is it **Solid 2.0-compatible** (or do we accept a pin/fallback)?
+4. Does it **work on Solid 1.x** (check its peer deps and that it doesn't rely on 2.0-only APIs)?
 5. Does it improve **types and velocity**, or add build-step magic an LLM will trip on?
 Avoid React-shaped heavyweight state libraries — Solid's signals/stores are the state layer.
 
@@ -83,10 +83,11 @@ Avoid React-shaped heavyweight state libraries — Solid's signals/stores are th
 - Measure before claiming a win; use the `perf-measure` protocol in `bench-prompt.md`.
 
 **Code shape:** feature-folder layout, thin components, logic in typed hooks/primitives. Match the surrounding code's idioms. Keep files an agent can navigate.
+- **Declare components as `export const Name: Component<Props> = (props) => { … }`** (use Solid's `Component` / `ParentComponent` type), not `export function`. This types props consistently and keeps the component-vs-helper distinction obvious.
 
 ## Pointers
 
-- SolidJS reference (read these): [`docs/solidjs/README.md`](docs/solidjs/README.md) — reactivity, stores, components, control flow, JSX/events, async, router, and a **Solid 2.0** deep-dive with a beta disclaimer.
+- SolidJS reference (read these): [`docs/solidjs/README.md`](docs/solidjs/README.md) — reactivity, stores, components, control flow, JSX/events, async, and router (all Solid 1.x).
 - Feature reference (what to build): `open-msupply/client/packages/inventory/src/Stocktake/`.
 - API: `open-msupply/server/schema.graphql`; endpoint `POST /graphql` (server default port 8000 — confirm locally); use the `v3.0.0-RC` branch with `debug_no_access_control: true`.
 - Perf protocol: `bench-prompt.md`.

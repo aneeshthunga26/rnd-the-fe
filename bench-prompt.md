@@ -24,7 +24,7 @@ and we all need comparable numbers. Build it for *this* project specifically.
 
 Ask me, concisely, and wait for answers:
 
-1. **How do I run this app for measurement?** (e.g. `npm run dev` on a port, a
+1. **How do I run this app for measurement?** (e.g. `pnpm run dev` on a port, a
    deployed URL, a static build). Get the exact command and/or base URL.
 2. **Does it need login or any setup to reach the page?** If yes, how — and where
    should credentials live? (Use a gitignored local file, never hardcode secrets.)

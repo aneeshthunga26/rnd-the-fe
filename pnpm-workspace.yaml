@@ -1,0 +1,7 @@
+allowBuilds:
+  esbuild: true
+# These TanStack releases are newer than the org minimum-release-age policy cutoff;
+# they are legitimate published versions, so allow them explicitly.
+minimumReleaseAgeExclude:
+  - '@tanstack/solid-virtual'
+  - '@tanstack/virtual-core'

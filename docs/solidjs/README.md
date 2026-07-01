@@ -2,18 +2,15 @@
 
 A curated, code-dense reference for building with **SolidJS** in this repo (a **client-side
 SPA — no SSR**). Each file is self-contained, optimized for an AI agent to consult while
-writing Solid code, and sourced from the official docs (`docs.solidjs.com`), the Solid source
-on GitHub, and—for 2.0—the shipped beta release notes, RFCs, and the `@solidjs/signals` package.
+writing Solid code, and sourced from the official docs (`docs.solidjs.com`) and the Solid
+source on GitHub.
 
 ## ⚠️ Version note — read this first
 
-There are two Solid worlds. **Default to 1.x.** Only use 2.0 APIs if the project's
-`package.json` pins `solid-js@^2` / `2.0.0-beta.*` or `@solidjs/signals`.
-
-- **Solid 1.x** (`solid-js@latest`, currently 1.9.x) — stable, what files `01`–`08` describe.
-- **Solid 2.0** (`solid-js@next`, beta) — major breaking rewrite; see `09`. The two have
-  different reactivity engines and several renamed/removed APIs (`createResource` removed,
-  `<Suspense>`→`<Loading>`, `batch` removed, etc.). Do not mix them.
+This project targets **stable Solid 1.x** (`solid-js@^1.9`). Everything in these docs describes
+the 1.x APIs. We deliberately do **not** use Solid 2.0 (it is still beta, and its split reactive
+core broke ecosystem libraries we rely on — TanStack `solid-virtual`/`solid-table` import the
+`solid-js/store` and `solid-js/web` subpaths that 2.0 removed). Stay on 1.x unless this note changes.
 
 ## Index
 
@@ -26,7 +23,6 @@ There are two Solid worlds. **Default to 1.x.** Only use 2.0 APIs if the project
 | 05 | [05-jsx-rendering-events.md](05-jsx-rendering-events.md) | `render`, JSX-vs-React differences, delegated/`on:`/bound events, `classList`/`style`, `attr:`/`prop:`/`bool:`, `ref`, `use:` directives |
 | 06 | [06-async-resources-suspense.md](06-async-resources-suspense.md) | `createResource`, `<Suspense>`/`<SuspenseList>`, `useTransition`/`startTransition`, `createDeferred`; data-fetching patterns |
 | 07 | [07-router.md](07-router.md) | `@solidjs/router` — routing, params, navigation, lazy routes, and the data layer (`query`/`createAsync`/`action`) |
-| 09 | [09-solid-2.0.md](09-solid-2.0.md) | **Solid 2.0** — new `@solidjs/signals` core, first-class async, deterministic batching, full rename/removal map, migration notes |
 
 ## How to use these (for an agent)
 
@@ -36,7 +32,6 @@ There are two Solid worlds. **Default to 1.x.** Only use 2.0 APIs if the project
 3. For lists, pick `<For>` vs `<Index>` deliberately (`04`) — wrong choice causes subtle bugs.
 4. For async data in plain Solid use `createResource` + `<Suspense>` (`06`); in a router app
    prefer the router data APIs (`07`).
-5. Treat every 2.0 API (`09`) as beta — verify before relying on it.
 
 > **No SSR:** this project is a client-side SPA, so SolidStart / server-rendering is intentionally
 > excluded. Ignore `"use server"`, hydration, and streaming-SSR guidance from upstream docs.
@@ -45,5 +40,4 @@ There are two Solid worlds. **Default to 1.x.** Only use 2.0 APIs if the project
 
 - Official docs: https://docs.solidjs.com
 - Core: https://github.com/solidjs/solid
-- Solid 2.0 reactive core: https://github.com/solidjs/signals
 - Router: https://github.com/solidjs/solid-router
