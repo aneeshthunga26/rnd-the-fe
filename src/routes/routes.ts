@@ -7,6 +7,7 @@ export const ROUTES = {
   stock: "/inventory/stock",
   locations: "/inventory/locations",
   stocktakes: "/inventory/stocktakes",
+  stocktakeDetail: "/inventory/stocktakes/:id",
   distribution: "/distribution",
   dispensary: "/dispensary",
   reports: "/reports",

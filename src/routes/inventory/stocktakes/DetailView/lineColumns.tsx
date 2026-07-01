@@ -1,0 +1,171 @@
+import { type Accessor } from "solid-js";
+import type { ColumnDef } from "@tanstack/solid-table";
+import { selectionColumn } from "../../../../components/table/selectionColumn";
+import { usePreferences } from "../../../../components/inputs";
+import { useStocktakeLineError } from "../../../../context/stocktakeLineError";
+import type { StocktakeLine } from "../api";
+import { formatDate } from "../columns";
+
+const num = (v: unknown) => (v == null ? "" : String(v));
+
+/** doses = counted × packSize × doses/unit (vaccines only; null when uncounted). */
+export const dosesCounted = (line: StocktakeLine): number | null => {
+  if (!line.item.isVaccine) return null;
+  const counted = line.countedNumberOfPacks;
+  if (counted == null) return null;
+  return counted * (line.packSize || line.item.defaultPackSize || 1) * (line.item.doses ?? 1);
+};
+
+/** difference = (counted ?? snapshot) − snapshot (0 for uncounted lines). */
+export const difference = (line: StocktakeLine): number =>
+  (line.countedNumberOfPacks ?? line.snapshotNumberOfPacks) - line.snapshotNumberOfPacks;
+
+/** A line is "uncounted" (placeholder) when its counted packs is null. */
+export const isUncounted = (line: StocktakeLine): boolean => line.countedNumberOfPacks == null;
+
+/**
+ * The lines-table columns. Reactive (accessor) so preference-gated columns appear
+ * once prefs resolve. Reads the line-error context for cell highlighting.
+ * Sortable column ids match `StocktakeLineSortFieldInput` keys (server sorts).
+ */
+export const useLineColumns = (): Accessor<ColumnDef<StocktakeLine>[]> => {
+  const prefs = usePreferences();
+  const { getError } = useStocktakeLineError();
+
+  // A cell that highlights (red border) when the line has a matching error.
+  const errorCell =
+    (match?: string) =>
+    (ctx: { row: { original: StocktakeLine }; getValue: () => unknown }) => {
+      const err = getError({ id: ctx.row.original.id });
+      const highlight = err && (match ? err.__typename === match : true);
+      return (
+        <span classList={{ "rounded border border-red-500 px-1": !!highlight }}>
+          {num(ctx.getValue())}
+        </span>
+      );
+    };
+
+  return () => {
+    const cols: ColumnDef<StocktakeLine>[] = [
+      selectionColumn<StocktakeLine>(),
+      {
+        id: "itemCode",
+        accessorFn: (r) => r.item.code,
+        header: "Code",
+        size: 120,
+        cell: errorCell(),
+      },
+      { id: "itemName", accessorKey: "itemName", header: "Name", size: 320 },
+      { id: "batch", accessorKey: "batch", header: "Batch", size: 110 },
+      {
+        id: "expiryDate",
+        accessorFn: (r) => r.expiryDate,
+        header: "Expiry",
+        size: 110,
+        cell: (ctx) => formatDate(ctx.getValue<string | null>()),
+      },
+      {
+        id: "manufactureDate",
+        accessorFn: (r) => r.manufactureDate,
+        header: "Manufactured",
+        size: 120,
+        enableSorting: false,
+        cell: (ctx) => formatDate(ctx.getValue<string | null>()),
+      },
+      {
+        id: "locationCode",
+        accessorFn: (r) => r.location?.code ?? "",
+        header: "Location",
+        size: 100,
+        enableSorting: false,
+      },
+      {
+        id: "itemUnit",
+        accessorFn: (r) => r.item.unitName ?? "",
+        header: "Unit",
+        size: 90,
+        enableSorting: false,
+      },
+      { id: "packSize", accessorKey: "packSize", header: "Pack size", size: 90, enableSorting: false },
+    ];
+
+    if (prefs().manageVaccinesInDoses) {
+      cols.push({
+        id: "itemDoses",
+        accessorFn: (r) => (r.item.isVaccine ? r.item.doses : undefined),
+        header: "Doses per unit",
+        size: 110,
+        enableSorting: false,
+        cell: (ctx) => num(ctx.getValue()),
+      });
+    }
+
+    cols.push(
+      {
+        id: "snapshotNumberOfPacks",
+        accessorKey: "snapshotNumberOfPacks",
+        header: "Snapshot",
+        size: 100,
+        cell: errorCell("SnapshotCountCurrentCountMismatchLine"),
+      },
+      {
+        id: "countedNumberOfPacks",
+        accessorKey: "countedNumberOfPacks",
+        header: "Counted",
+        size: 100,
+        cell: errorCell("StockLineReducedBelowZero"),
+      },
+    );
+
+    if (prefs().manageVaccinesInDoses) {
+      cols.push({
+        id: "dosesCounted",
+        accessorFn: (r) => dosesCounted(r),
+        header: "Doses counted",
+        size: 110,
+        enableSorting: false,
+        cell: (ctx) => num(ctx.getValue()),
+      });
+    }
+
+    cols.push(
+      {
+        id: "difference",
+        accessorFn: (r) => difference(r),
+        header: "Difference",
+        size: 100,
+        enableSorting: false,
+        cell: (ctx) => num(ctx.getValue()),
+      },
+      {
+        id: "reasonOption",
+        accessorFn: (r) => r.reasonOption?.reason ?? "",
+        header: "Reason",
+        size: 140,
+      },
+    );
+
+    if (prefs().allowTrackingOfStockByDonor) {
+      cols.push({
+        id: "donor",
+        accessorFn: (r) => r.donorName ?? "",
+        header: "Donor",
+        size: 140,
+        enableSorting: false,
+      });
+    }
+
+    cols.push(
+      {
+        id: "manufacturer",
+        accessorFn: (r) => r.manufacturer?.name ?? "",
+        header: "Manufacturer",
+        size: 140,
+        enableSorting: false,
+      },
+      { id: "comment", accessorKey: "comment", header: "Comment", size: 160, enableSorting: false },
+    );
+
+    return cols;
+  };
+};

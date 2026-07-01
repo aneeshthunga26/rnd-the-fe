@@ -1,21 +1,58 @@
-import { type Component, Show } from "solid-js";
+import { type Component, createSignal, Show } from "solid-js";
 import {
+  type ColumnOrderState,
+  type ColumnPinningState,
+  type ColumnSizingState,
   createSolidTable,
   getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
+  type RowSelectionState,
+  type SortingState,
+  type VisibilityState,
 } from "@tanstack/solid-table";
+import { useNavigate } from "@solidjs/router";
 import { PageActions } from "../../../components/layout/PageHeader";
-import { DataTable } from "../../../components/table/DataTable";
+import { type Density, DataTable } from "../../../components/table/DataTable";
 import { FilterBar } from "../../../components/table/FilterBar";
 import { TablePagination } from "../../../components/table/TablePagination";
-import { TableToolbar } from "../../../components/table/TableToolbar";
-import { ChevronDownIcon, PlusCircleIcon, UploadIcon } from "../../../components/icons";
+import { TableToolbar, toolbarBtnClass } from "../../../components/table/TableToolbar";
+import { ColumnPickerMenu } from "../../../components/table/ColumnPickerMenu";
+import { TableSettingsMenu } from "../../../components/table/TableSettingsMenu";
+import { FullscreenContainer } from "../../../components/table/FullscreenContainer";
+import { useFullscreen } from "../../../components/table/useFullscreen";
+import { SelectionFooter } from "../../../components/table/SelectionFooter";
+import { ConfirmModal } from "../../../components/ui/ConfirmModal";
+import { Select } from "../../../components/ui/Select";
+import { CreateStocktakeModal } from "./CreateStocktakeModal";
+import {
+  ChevronDownIcon,
+  DeleteIcon,
+  FullscreenIcon,
+  PlusCircleIcon,
+  UploadIcon,
+} from "../../../components/icons";
 import { useIsMobile } from "../../../lib/useMediaQuery";
-import { type StocktakeRow, useStocktakes } from "./api";
+import { useUrlQueryParams } from "../../../lib/useUrlQueryParams";
+import { usePersistedTableState } from "../../../lib/persistTableState";
+import {
+  canDeleteStocktake,
+  type StocktakeFilter,
+  type StocktakeListParams,
+  type StocktakeRow,
+  type StocktakeSortKey,
+  useStocktakeDelete,
+  useStocktakes,
+} from "./api";
 import { columns, formatDate } from "./columns";
 
-const PAGE_SIZE = 20;
+const SORT_KEYS = new Set<StocktakeSortKey>([
+  "stocktakeNumber",
+  "status",
+  "description",
+  "comment",
+  "createdDatetime",
+  "finalisedDatetime",
+  "stocktakeDate",
+]);
 
 // Mobile card for a stocktake row.
 const renderStocktakeCard = (row: StocktakeRow) => (
@@ -33,24 +70,116 @@ const renderStocktakeCard = (row: StocktakeRow) => (
 
 export const ListView: Component = () => {
   const isMobile = useIsMobile();
-  const query = useStocktakes();
+  const navigate = useNavigate();
+  const url = useUrlQueryParams({ initialSort: { key: "createdDatetime", dir: "desc" }, pageSize: 20 });
 
-  const table = createSolidTable({
-    get data() {
-      return query.data ?? [];
-    },
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    initialState: { pagination: { pageIndex: 0, pageSize: PAGE_SIZE } },
+  // Map the URL's raw filter record → the server's typed StocktakeFilter.
+  const listParams = (): StocktakeListParams => {
+    const qp = url.queryParams();
+    const filterBy: StocktakeFilter = {};
+    const status = qp.filterBy.status;
+    if (status === "NEW" || status === "FINALISED") filterBy.status = { equalTo: status };
+    const key = qp.sortBy?.key as StocktakeSortKey | undefined;
+    return {
+      first: qp.first,
+      offset: qp.offset,
+      sortBy: key && SORT_KEYS.has(key) ? { key, desc: qp.sortBy!.desc } : undefined,
+      filterBy: Object.keys(filterBy).length ? filterBy : undefined,
+    };
+  };
+
+  const query = useStocktakes(listParams);
+
+  // Controlled table state — signals so Wave-2 menus (columns / settings) can drive them.
+  const [rowSelection, setRowSelection] = createSignal<RowSelectionState>({});
+  const [columnVisibility, setColumnVisibility] = createSignal<VisibilityState>({});
+  const [columnOrder, setColumnOrder] = createSignal<ColumnOrderState>([]);
+  const [columnPinning, setColumnPinning] = createSignal<ColumnPinningState>({ left: [], right: [] });
+  const [columnSizing, setColumnSizing] = createSignal<ColumnSizingState>({});
+  const [density, setDensity] = createSignal<Density>("comfortable");
+
+  // Persist table state (density / visibility / order / pinning / sizing) — 05.
+  const persisted = usePersistedTableState("stocktake-list", {
+    columnVisibility,
+    setColumnVisibility,
+    columnOrder,
+    setColumnOrder,
+    columnPinning,
+    setColumnPinning,
+    columnSizing,
+    setColumnSizing,
+    density,
+    setDensity,
   });
 
-  const statusColumn = () => table.getColumn("status");
-  const setStatus = (value: string) => {
-    statusColumn()?.setFilterValue(value || undefined);
-    table.setPageIndex(0);
+  // Fullscreen toggle — 04.
+  const fs = useFullscreen();
+
+  // Create-stocktake modal — 06.
+  const [createOpen, setCreateOpen] = createSignal(false);
+
+  // Selection delete — 02.
+  const del = useStocktakeDelete();
+  const [confirmOpen, setConfirmOpen] = createSignal(false);
+  const selectedRows = () => table.getSelectedRowModel().rows.map((r) => r.original);
+  const undeletable = () => selectedRows().some((r) => !canDeleteStocktake(r));
+  const doDelete = async () => {
+    await del.mutateAsync(selectedRows());
+    table.resetRowSelection();
+    setConfirmOpen(false);
   };
+
+  const sortingState = (): SortingState => {
+    const s = url.sort();
+    return s ? [{ id: s.key, desc: s.dir === "desc" }] : [];
+  };
+
+  const table = createSolidTable<StocktakeRow>({
+    get data() {
+      return query.data?.rows ?? [];
+    },
+    columns,
+    state: {
+      get rowSelection() {
+        return rowSelection();
+      },
+      get sorting() {
+        return sortingState();
+      },
+      get columnVisibility() {
+        return columnVisibility();
+      },
+      get columnOrder() {
+        return columnOrder();
+      },
+      get columnPinning() {
+        return columnPinning();
+      },
+      get columnSizing() {
+        return columnSizing();
+      },
+    },
+    getRowId: (row) => row.id,
+    enableRowSelection: true,
+    manualPagination: true,
+    manualSorting: true,
+    manualFiltering: true,
+    enableMultiSort: false,
+    enableSortingRemoval: false,
+    sortDescFirst: false,
+    columnResizeMode: "onChange",
+    onRowSelectionChange: setRowSelection,
+    onColumnVisibilityChange: setColumnVisibility,
+    onColumnOrderChange: setColumnOrder,
+    onColumnPinningChange: setColumnPinning,
+    onColumnSizingChange: setColumnSizing,
+    onSortingChange: (updater) => {
+      const next = typeof updater === "function" ? updater(sortingState()) : updater;
+      const first = next[0];
+      if (first) url.setSort(first.id);
+    },
+    getCoreRowModel: getCoreRowModel(),
+  });
 
   return (
     <>
@@ -58,8 +187,10 @@ export const ListView: Component = () => {
           On mobile the app bar is hidden (title lives in the shell top bar) and
           the actions collapse to icons rendered inline on the filter row below. */}
       <PageActions>
+        {/* SLOT:actions-new — 06 */}
         <button
           type="button"
+          onClick={() => setCreateOpen(true)}
           class="flex items-center gap-2 rounded-full border border-brand px-4 py-2 text-sm font-medium text-brand hover:bg-brand-light"
         >
           <PlusCircleIcon class="w-5 h-5" /> New stocktake
@@ -78,9 +209,11 @@ export const ListView: Component = () => {
         <FilterBar
           leading={
             <Show when={isMobile()}>
+              {/* SLOT:actions-new (mobile) — 06 */}
               <button
                 type="button"
                 title="New stocktake"
+                onClick={() => setCreateOpen(true)}
                 class="flex h-9 w-9 items-center justify-center rounded-full border border-brand text-brand hover:bg-brand-light"
               >
                 <PlusCircleIcon class="w-5 h-5" />
@@ -96,29 +229,96 @@ export const ListView: Component = () => {
             </Show>
           }
         >
-          <select
-            class="rounded-lg border border-line bg-page px-3 py-2 text-sm text-gray-menu hover:bg-row-hover"
-            value={(statusColumn()?.getFilterValue() as string) ?? ""}
-            onChange={(e) => setStatus(e.currentTarget.value)}
-          >
-            <option value="">Status</option>
-            <option value="NEW">New</option>
-            <option value="FINALISED">Finalised</option>
-          </select>
+          <Select
+            aria-label="Filter by status"
+            placeholder="Status"
+            clearable
+            class="min-w-[9rem]"
+            value={url.getFilter("status") ?? ""}
+            onChange={(v) => url.setFilter("status", v)}
+            options={[
+              { value: "NEW", label: "New" },
+              { value: "FINALISED", label: "Finalised" },
+            ]}
+          />
         </FilterBar>
 
-        <TableToolbar />
+        {/* Table region — toolbar buttons + table + pagination.
+            04 (fullscreen) wraps this whole region; the filter bar above stays out. */}
+        <FullscreenContainer isFullscreen={fs.isFullscreen()}>
+          <TableToolbar
+            columns={/* SLOT:toolbar-columns — 03 */ <ColumnPickerMenu table={table} />}
+            fullscreen={
+              /* SLOT:toolbar-fullscreen — 04 */
+              <button
+                class={toolbarBtnClass}
+                title={fs.isFullscreen() ? "Exit fullscreen" : "Fullscreen"}
+                type="button"
+                onClick={fs.toggle}
+              >
+                <FullscreenIcon />
+              </button>
+            }
+            settings={
+              /* SLOT:toolbar-settings — 05 */
+              <TableSettingsMenu persisted={persisted} density={density} setDensity={setDensity} />
+            }
+          />
 
-        <Show
-          when={!query.isError}
-          fallback={<div class="p-6 text-red-600">Failed to load stocktakes: {String(query.error)}</div>}
-        >
-          <Show when={!query.isPending} fallback={<div class="p-6 text-gray-muted">Loading stocktakes…</div>}>
-            <DataTable table={table} renderCard={renderStocktakeCard} />
-            <TablePagination table={table} pageSizeOptions={[20, 50, 100]} />
+          <Show
+            when={!query.isError}
+            fallback={<div class="p-6 text-red-600">Failed to load stocktakes: {String(query.error)}</div>}
+          >
+            <Show
+              when={query.data || !query.isPending}
+              fallback={<div class="p-6 text-gray-muted">Loading stocktakes…</div>}
+            >
+              <DataTable
+                table={table}
+                density={density()}
+                renderCard={renderStocktakeCard}
+                onRowClick={(row) => navigate(`/inventory/stocktakes/${row.id}`)}
+              />
+              <TablePagination
+                total={query.data?.totalCount ?? 0}
+                pageIndex={url.pagination().pageIndex}
+                pageSize={url.pagination().pageSize}
+                onPage={url.setPage}
+                onPageSize={url.setPageSize}
+                pageSizeOptions={[20, 50, 100]}
+              />
+            </Show>
           </Show>
-        </Show>
+        </FullscreenContainer>
+
+        {/* SLOT:selection-footer — 02 */}
+        <SelectionFooter
+          count={selectedRows().length}
+          onClear={() => table.resetRowSelection()}
+          actions={[
+            {
+              label: "Delete",
+              tone: "danger",
+              icon: <DeleteIcon class="h-4 w-4" />,
+              disabled: undeletable(),
+              title: undeletable() ? "Cannot delete finalised or on-hold stocktakes" : undefined,
+              onClick: () => setConfirmOpen(true),
+            },
+          ]}
+        />
       </div>
+
+      <ConfirmModal
+        open={confirmOpen()}
+        tone="danger"
+        title="Delete stocktakes"
+        message={`Are you sure? This will delete ${selectedRows().length} stocktake(s).`}
+        confirmLabel="Delete"
+        onConfirm={doDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
+
+      <CreateStocktakeModal open={createOpen()} onOpenChange={setCreateOpen} />
     </>
   );
 };

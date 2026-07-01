@@ -215,3 +215,38 @@ export const CloseIcon: Component<IconProps> = (p) => (
     <path d="M6 6l12 12M18 6L6 18" />
   </Svg>
 );
+
+export const DeleteIcon: Component<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M4 7h16M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M6 7l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13" />
+    <path d="M10 11v6M14 11v6" />
+  </Svg>
+);
+
+export const LockIcon: Component<IconProps> = (p) => (
+  <Svg {...p}>
+    <rect x="5" y="11" width="14" height="9" rx="2" />
+    <path d="M8 11V7a4 4 0 018 0v4" />
+  </Svg>
+);
+
+export const CopyIcon: Component<IconProps> = (p) => (
+  <Svg {...p}>
+    <rect x="9" y="9" width="11" height="11" rx="2" />
+    <path d="M5 15V5a2 2 0 012-2h10" />
+  </Svg>
+);
+
+export const LocationIcon: Component<IconProps> = (p) => (
+  <Svg {...p}>
+    <path d="M12 21s-6-5.3-6-10a6 6 0 1112 0c0 4.7-6 10-6 10z" />
+    <circle cx="12" cy="11" r="2" />
+  </Svg>
+);
+
+export const ZeroIcon: Component<IconProps> = (p) => (
+  <Svg {...p}>
+    <circle cx="12" cy="12" r="8" />
+    <path d="M7 7l10 10" />
+  </Svg>
+);
