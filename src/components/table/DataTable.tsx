@@ -209,10 +209,16 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
                         height: `${virtualRow.size}px`,
                         transform: `translateY(${virtualRow.start}px)`,
                       }}
-                      class={`flex cursor-pointer items-center border-b border-line bg-bg text-sm text-fg hover:bg-row-hover ${
+                      class={`flex cursor-pointer items-center border-b border-line text-sm text-fg hover:bg-row-hover ${
                         props.rowClass?.(row().original) ?? ""
                       }`}
-                      classList={{ "bg-brand-light/40 hover:bg-brand-light/50": row().getIsSelected() }}
+                      classList={{
+                        // Zebra striping (odd rows tinted) for readability; the
+                        // selected + pinned-cell backgrounds inherit from here.
+                        "bg-bg": !row().getIsSelected() && virtualRow.index % 2 === 0,
+                        "bg-surface": !row().getIsSelected() && virtualRow.index % 2 === 1,
+                        "bg-brand-light/40 hover:bg-brand-light/50": row().getIsSelected(),
+                      }}
                       onClick={() => props.onRowClick?.(row().original)}
                     >
                       <For each={cellsOf(row())}>
