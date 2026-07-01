@@ -2,3 +2,8 @@ node_modules/
 dist/
 *.local
 .DS_Store
+
+# perf-measure local creds — never commit secrets
+.claude/skills/perf-measure/perf.local.json
+# perf-measure heap snapshots — large, kept out of git
+docs/perf/*.heapsnapshot

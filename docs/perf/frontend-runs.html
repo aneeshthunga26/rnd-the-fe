@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Frontend perf runs — rnd-the-fe</title>
+<style>
+  body { font: 13px/1.4 system-ui, sans-serif; margin: 24px; color: #111; }
+  h1 { font-size: 18px; }
+  .note { background: #fff8e1; border: 1px solid #ffe082; padding: 8px 12px; border-radius: 6px; max-width: 900px; }
+  table { border-collapse: collapse; margin-top: 16px; font-variant-numeric: tabular-nums; }
+  th, td { border: 1px solid #ddd; padding: 4px 8px; white-space: nowrap; text-align: right; }
+  th { position: sticky; top: 0; background: #f5f5f5; z-index: 1; }
+  td:first-child, td:nth-child(2), th:first-child, th:nth-child(2) { text-align: left; }
+  tbody tr:nth-child(even) { background: #fafafa; }
+</style>
+</head>
+<body>
+<h1>Frontend performance runs — rnd-the-fe</h1>
+<div class="note">
+  <strong>How to read this:</strong> the headline ranking metric is
+  <strong>TTData</strong> (navigation → the "page ready" content signal) and, when a
+  real network layer exists, <strong>TTNetQuiet</strong> (data layer idle). The browser
+  <code>load</code> event and <strong>LCP</strong> are recorded for reference only —
+  <strong>LCP is often blank for SPAs, which is expected</strong>, not an error, because
+  the largest content is client-rendered after first paint. All timings are
+  <strong>median of N (min–max)</strong> with the warm-up run dropped. Two rows are only
+  comparable when Machine, CPU×, Network, Cache and Items match. Newest rows at the bottom.
+</div>
+<table>
+<thead><tr><th title="context">UTC</th><th title="context">Scenario</th><th title="context">Branch</th><th title="context">Commit</th><th title="context">Machine</th><th title="context">Chrome</th><th title="context">CPU×</th><th title="context">Network</th><th title="context">Cache</th><th title="context">Items</th><th title="context">N</th><th title="headline">TTData (ms)</th><th title="headline">TTNetQuiet (ms)</th><th title="network">#Data reqs</th><th title="network">Slowest req (ms)</th><th title="reference">TTFB (ms)</th><th title="reference">FCP (ms)</th><th title="reference">load (ms)</th><th title="reference">CLS</th><th title="reference">LCP (ms)</th><th title="memory">JS heap (MB)</th><th title="memory">Heap snap (MB)</th><th title="weight">DOM nodes</th><th title="weight">#Resources</th><th title="weight">Transfer (KB)</th><th title="context">Notes</th></tr></thead>
+<tbody>
+<tr><td>2026-07-01T00:45:27.284Z</td><td>stocktakes-list</td><td>performance-test</td><td>1187951</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>1459 (1449–1467)</td><td>—</td><td>0</td><td>—</td><td>1</td><td>1216</td><td>1194</td><td>0</td><td>1216</td><td>4.4</td><td>2.8</td><td>166</td><td>1</td><td>0</td><td>prod build; in-memory mock API (no network layer → TTNetQuiet n/a); 200-row dataset, PAGE_SIZE 20 → 20 virtualized rows; collector v1.0.0</td></tr>
+<!-- PERF_ROWS -->
+</tbody>
+</table>
+</body>
+</html>
