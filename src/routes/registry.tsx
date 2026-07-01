@@ -15,22 +15,22 @@ type Entry = {
 };
 
 const entries: Entry[] = [
-  { path: ROUTES.dashboard, component: lazy(() => import("./DashboardScreen")) },
-  { path: ROUTES.replenishment, component: lazy(() => import("./ReplenishmentScreen")) },
-  { path: ROUTES.stock, component: lazy(() => import("./inventory/StockScreen")) },
-  { path: ROUTES.locations, component: lazy(() => import("./inventory/LocationsScreen")) },
+  { path: ROUTES.dashboard, component: lazy(() => import("./dashboard/DashboardScreen")) },
+  { path: ROUTES.replenishment, component: lazy(() => import("./replenishment/ReplenishmentScreen")) },
+  { path: ROUTES.stock, component: lazy(() => import("./inventory/stock/StockScreen")) },
+  { path: ROUTES.locations, component: lazy(() => import("./inventory/locations/LocationsScreen")) },
   { path: ROUTES.stocktakes, component: lazy(() => import("./inventory/stocktakes/StocktakesScreen")) },
   {
     path: ROUTES.stocktakeDetail,
     component: lazy(() => import("./inventory/stocktakes/DetailView/DetailView")),
   },
-  { path: ROUTES.distribution, component: lazy(() => import("./DistributionScreen")) },
-  { path: ROUTES.dispensary, component: lazy(() => import("./DispensaryScreen")) },
-  { path: ROUTES.reports, component: lazy(() => import("./ReportsScreen")) },
-  { path: ROUTES.catalogue, component: lazy(() => import("./CatalogueScreen")) },
-  { path: ROUTES.settings, component: lazy(() => import("./SettingsScreen")) },
-  { path: ROUTES.sync, component: lazy(() => import("./SyncScreen")) },
-  { path: ROUTES.help, component: lazy(() => import("./HelpScreen")) },
+  { path: ROUTES.distribution, component: lazy(() => import("./distribution/DistributionScreen")) },
+  { path: ROUTES.dispensary, component: lazy(() => import("./dispensary/DispensaryScreen")) },
+  { path: ROUTES.reports, component: lazy(() => import("./reports/ReportsScreen")) },
+  { path: ROUTES.catalogue, component: lazy(() => import("./catalogue/CatalogueScreen")) },
+  { path: ROUTES.settings, component: lazy(() => import("./settings/SettingsScreen")) },
+  { path: ROUTES.sync, component: lazy(() => import("./sync/SyncScreen")) },
+  { path: ROUTES.help, component: lazy(() => import("./help/HelpScreen")) },
 ];
 
 /**

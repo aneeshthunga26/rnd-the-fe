@@ -83,14 +83,26 @@ Avoid React-shaped heavyweight state libraries — Solid's signals/stores are th
 - `useXApi.ts` — the **hub**: the one place that supplies `storeId` (config today, a store context later) and returns `{ ...getXQueries(storeId), storeId, keys }`. Nothing else needs to know where storeId comes from.
 - query/mutation hooks (`useXs.ts`, `useUpdateX.ts`) — thin wrappers: `useQuery(() => ({ queryKey: api.keys.list(), queryFn: api.get.list() }))`; mutations call `useMutation` and invalidate `api.keys.base()` (broad) or `api.keys.detail(id)` (narrow) on success.
 - `index.ts` — barrel; screens import hooks/types from `./api` and never touch `request()`/keys directly.
-- **Screen files stay pure UI**: a `*Screen.tsx` route entry composes views; the list UI lives in `ListView.tsx` (later `DetailView.tsx`) and gets data via the vertical's hooks.
+- **Screen files stay pure UI**: a `*Screen.tsx` route entry composes views; the list UI lives in `ListView.tsx` (later `DetailView.tsx`) and gets data via the vertical's hooks. Each screen owns a **folder** under `routes/` (e.g. `routes/dashboard/DashboardScreen.tsx`, `routes/inventory/stock/StockScreen.tsx`), the folder later hosting that area's `api/`/views — `routes/inventory/stocktakes/` is the template.
+
+**Components vs `system/` modules** (presentational vs domain):
+- `src/components/**` is **generic, presentational, reusable UI only** — **no** gql.tada documents, **no** `useQuery`/`useMutation`, no domain knowledge (DataTable, Modal, Menu, AsyncCombobox, layout, icons, and app UI like `LanguageSelect`). A grep for `graphql(`/`useQuery`/`useMutation` under `src/components/**` must come back empty.
+- **Domain/entity components that need data live in `src/system/<Entity>/`**, colocating `Components/<Entity>SearchInput.tsx` + `api/` (`operations.ts` gql.tada docs, `use<Entity>.ts` hook returning the `useQuery` object, `index.ts`) + a module `index.ts` barrel that re-exports the component(s) + row type(s). Same per-vertical `api/` pattern, for shared entities (see `src/system/{MasterList,Location,VvmStatus,ReasonOption,Item,Name,CampaignOrProgram}/`). Author new search/select inputs here from the start.
+- Cross-cutting non-entity hooks (e.g. `usePreferences`) live in their own top-level folder (`src/preferences/`), not in `components/`.
 
 **State & i18n:**
 - Server data in resources; nested editable UI state (the line-edit modal) in **stores**; simple flags in signals ([`02`](docs/solidjs/02-stores.md)).
 - All user-facing strings go through i18n; all numbers/dates through the `Intl` helpers. No hardcoded English or `toLocaleString()` scattered around.
 
 **Performance discipline:**
-- Virtualize the lines table. Batch mutations (the API has `batchStocktake`). Avoid waterfalls — fire independent queries together.
+- **When to virtualize:** virtualize any list/table that can render **more than ~100 rows/nodes at once**
+  (e.g. the stocktake lines table via `DataTable` + `@tanstack/solid-virtual`). If a list is already bounded
+  small — a **server-paginated page** (~20–50 rows), a dropdown **capped by a server `first` + typeahead
+  filter**, or a fixed small set — plain rendering is fine; don't add virtualization. So: **bound first
+  (server pagination / a `first` cap + server-side search), virtualize when the visible count can still grow
+  large.** Note the two current non-virtualized spots that rely on bounding: the mobile **card** view (bounded
+  by page size) and the search **comboboxes** (bounded by their `first` cap — keep caps modest, ~50–100).
+- Batch mutations (the API has `batchStocktake`). Avoid waterfalls — fire independent queries together.
 - Measure before claiming a win; use the `perf-measure` protocol in `bench-prompt.md`.
 
 **Code shape:** feature-folder layout, thin components, logic in typed hooks/primitives. Match the surrounding code's idioms. Keep files an agent can navigate.

@@ -9,12 +9,12 @@ import { useStocktakeApi } from "./useStocktakeApi";
 export const canDeleteStocktake = (row: Pick<StocktakeRow, "status" | "isLocked">) =>
   row.status === "NEW" && !row.isLocked;
 
-/** Delete-stocktakes mutation. Invalidates the whole list on success. */
+/** Delete-stocktakes mutation. Invalidates the lists on success. */
 export const useStocktakeDelete = () => {
   const api = useStocktakeApi();
   const queryClient = useQueryClient();
   return useMutation(() => ({
     mutationFn: (rows: Pick<StocktakeRow, "id">[]) => api.deleteStocktakes(rows),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: api.keys.base() }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: api.keys.list() }),
   }));
 };
