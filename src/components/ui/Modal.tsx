@@ -30,10 +30,7 @@ export const Modal: Component<ModalProps> = (props) => (
         >
           <div class="flex items-center justify-between gap-4 border-b border-line px-5 py-3">
             <Dialog.Title class="text-base font-semibold text-fg">{props.title}</Dialog.Title>
-            <Dialog.CloseButton
-              class="rounded-md p-1 text-muted hover:bg-row-hover"
-              aria-label="Close"
-            >
+            <Dialog.CloseButton class="rounded-md p-1 text-muted hover:bg-row-hover" aria-label="Close">
               <CloseIcon class="h-5 w-5" />
             </Dialog.CloseButton>
           </div>

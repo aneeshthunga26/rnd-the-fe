@@ -8,21 +8,31 @@ export const LocationRowFragment = graphql(`
     onHold
     volume
     volumeUsed
-    locationType { id name }
+    locationType {
+      id
+      name
+    }
   }
 `);
 export type LocationRow = ResultOf<typeof LocationRowFragment>;
 
 export const LocationsDocument = graphql(
   `
-  query locations($storeId: String!, $filter: LocationFilterInput, $first: Int) {
-    locations(storeId: $storeId, filter: $filter, page: { first: $first }, sort: { key: name, desc: false }) {
-      ... on LocationConnector {
-        totalCount
-        nodes { ...LocationRow }
+    query locations($storeId: String!, $filter: LocationFilterInput, $first: Int) {
+      locations(
+        storeId: $storeId
+        filter: $filter
+        page: { first: $first }
+        sort: { key: name, desc: false }
+      ) {
+        ... on LocationConnector {
+          totalCount
+          nodes {
+            ...LocationRow
+          }
+        }
       }
     }
-  }
-`,
+  `,
   [LocationRowFragment],
 );

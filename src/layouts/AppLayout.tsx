@@ -1,4 +1,4 @@
-import { createSignal, type ParentComponent, Show } from "solid-js";
+import { createSignal, type ParentComponent, Show, Suspense } from "solid-js";
 import { useLocation } from "@solidjs/router";
 import { Sidebar } from "../components/layout/Sidebar";
 import { MobileHeader } from "../components/layout/MobileHeader";
@@ -14,6 +14,13 @@ import { getRouteTitle } from "../routes/routeMeta";
  * Desktop: sidebar + AppBar (title from route + screen-contributed actions).
  * Mobile: top bar with burger (nav drawer) + content + store bottom bar.
  */
+/** Small centered spinner shown while a lazy route chunk loads. */
+const RouteFallback: ParentComponent = () => (
+  <div class="flex flex-1 items-center justify-center">
+    <div class="h-6 w-6 animate-spin rounded-full border-2 border-line border-t-brand" />
+  </div>
+);
+
 const Shell: ParentComponent = (props) => {
   const isMobile = useIsMobile();
   const location = useLocation();
@@ -29,14 +36,16 @@ const Shell: ParentComponent = (props) => {
           <Sidebar />
           <main class="flex min-w-0 flex-1 flex-col overflow-hidden">
             <AppBar title={title()} actions={actions()} />
-            {props.children}
+            <Suspense fallback={<RouteFallback />}>{props.children}</Suspense>
           </main>
         </div>
       }
     >
       <div class="flex h-screen flex-col overflow-hidden bg-bg">
         <MobileHeader title={title()} onMenu={() => setDrawerOpen(true)} />
-        <main class="flex min-h-0 flex-1 flex-col overflow-hidden">{props.children}</main>
+        <main class="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <Suspense fallback={<RouteFallback />}>{props.children}</Suspense>
+        </main>
         <StoreBar variant="bar" />
         <MobileDrawer open={drawerOpen()} onClose={() => setDrawerOpen(false)} />
       </div>

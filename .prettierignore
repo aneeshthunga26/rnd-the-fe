@@ -1,0 +1,11 @@
+dist
+node_modules
+.vite
+pnpm-lock.yaml
+
+# Generated artifacts — never hand-format.
+schema.graphql
+src/graphql/graphql-env.d.ts
+
+# Authored specs / design docs / vendored reference material — kept hand-written.
+*.md

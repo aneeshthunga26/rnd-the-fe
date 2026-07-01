@@ -57,8 +57,7 @@ export const CreateStocktakeModal: Component<Props> = (props) => {
   const setType = (type: StocktakeType) => setState(reconcile({ ...DEFAULT_STATE, type }));
 
   // "Include all items" (out-of-stock) is only allowed for a pure master-list filter.
-  const canIncludeAll = () =>
-    !!state.masterList && !state.location && !state.expiryDate && !state.vvmStatus;
+  const canIncludeAll = () => !!state.masterList && !state.location && !state.expiryDate && !state.vvmStatus;
 
   // ── Estimated-lines counts ──────────────────────────────────────────────────
   const countsEnabled = () => props.open && state.type !== "BLANK";
@@ -104,8 +103,7 @@ export const CreateStocktakeModal: Component<Props> = (props) => {
     const parts: string[] = [];
     if (state.masterList) parts.push(`in master list ${state.masterList.name}`);
     if (state.location) parts.push(`in location ${state.location.code}`);
-    if (state.expiryDate)
-      parts.push(`that expire before ${fmt().formatDate(state.expiryDate)}`);
+    if (state.expiryDate) parts.push(`that expire before ${fmt().formatDate(state.expiryDate)}`);
     if (state.vvmStatus) parts.push(`with VVM status ${state.vvmStatus.description}`);
     if (parts.length === 0) return undefined;
     const filters =
@@ -249,9 +247,7 @@ export const CreateStocktakeModal: Component<Props> = (props) => {
                     type="date"
                     class="rounded-lg border border-line bg-bg px-3 py-2 text-sm"
                     value={state.expiryDate}
-                    onChange={(e) =>
-                      setState({ expiryDate: e.currentTarget.value, includeAllItems: false })
-                    }
+                    onChange={(e) => setState({ expiryDate: e.currentTarget.value, includeAllItems: false })}
                   />
                 </label>
 

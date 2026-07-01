@@ -37,9 +37,7 @@ export const CommandPalette: Component = () => {
     const q = query().trim().toLowerCase();
     const all = commands();
     if (!q) return all;
-    return all.filter((c) =>
-      `${c.title} ${c.keywords ?? ""} ${c.path}`.toLowerCase().includes(q),
-    );
+    return all.filter((c) => `${c.title} ${c.keywords ?? ""} ${c.path}`.toLowerCase().includes(q));
   });
 
   // Reset query + highlight when the palette opens; focus the input.

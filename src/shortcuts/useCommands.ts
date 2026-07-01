@@ -23,7 +23,7 @@ export const useCommands = (): (() => Command[]) => {
 
   // Titles are translated inside the memo so it tracks locale: switching language
   // re-derives every command title (getRouteTitle returns an i18n key, not text).
-  return createMemo<Command[]>(() =>
+  const commands = createMemo<Command[]>(() =>
     Object.entries(ROUTES)
       .filter(([, path]) => !path.includes(":"))
       .map(([id, path]) => {
@@ -37,4 +37,5 @@ export const useCommands = (): (() => Command[]) => {
         };
       }),
   );
+  return commands;
 };

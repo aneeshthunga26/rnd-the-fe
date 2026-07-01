@@ -163,11 +163,11 @@ export const fr: Dictionary = {
     "save-and-confirm-finalised": "Enregistrer et confirmer le statut : Finalisé",
     "finalise-needs-lines": "Ajoutez et comptez au moins une ligne avant de finaliser",
     "confirm-delete-lines": "Supprimer {{ count }} ligne(s) sélectionnée(s) ?",
-    "confirm-change-location":
-      "Êtes-vous sûr de vouloir modifier l'emplacement des lignes sélectionnées ?",
+    "confirm-change-location": "Êtes-vous sûr de vouloir modifier l'emplacement des lignes sélectionnées ?",
     "restricted-location-conflict":
       "Les lignes sélectionnées ont des types d'emplacement restreints en conflit et ne peuvent pas être déplacées ensemble.",
-    "restricted-location-type": "Les lignes sélectionnées sont restreintes à un type d'emplacement spécifique.",
+    "restricted-location-type":
+      "Les lignes sélectionnées sont restreintes à un type d'emplacement spécifique.",
     "confirm-reduce-to-zero":
       "Êtes-vous sûr de vouloir réduire à zéro la quantité comptée des lignes sélectionnées ?",
     "cannot-edit-stocktake": "Cet inventaire ne peut pas être modifié.",

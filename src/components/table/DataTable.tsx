@@ -1,11 +1,5 @@
 import { createEffect, For, type JSX, Show } from "solid-js";
-import {
-  type Cell,
-  flexRender,
-  type Header,
-  type Row,
-  type Table,
-} from "@tanstack/solid-table";
+import { type Cell, flexRender, type Header, type Row, type Table } from "@tanstack/solid-table";
 import { createVirtualizer } from "@tanstack/solid-virtual";
 import { useIsMobile } from "../../lib/useMediaQuery";
 
@@ -93,8 +87,7 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
     virtualizer.measure();
   });
 
-  const sortIndicator = (dir: false | "asc" | "desc") =>
-    dir === "asc" ? "▲" : dir === "desc" ? "▼" : "";
+  const sortIndicator = (dir: false | "asc" | "desc") => (dir === "asc" ? "▲" : dir === "desc" ? "▼" : "");
 
   // Generic card fallback: label/value per (string-headed) column.
   const genericCard = (row: Row<TData>) => (

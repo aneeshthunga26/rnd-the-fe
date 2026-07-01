@@ -16,7 +16,12 @@ export const Toolbar: Component<ToolbarProps> = (props) => {
   const [description, setDescription] = createSignal(props.stocktake.description ?? "");
   // Re-seed only when the stocktake changes (by id), not on every refetch — so an
   // unrelated field commit elsewhere doesn't wipe in-progress typing here.
-  createEffect(on(() => props.stocktake.id, () => setDescription(props.stocktake.description ?? "")));
+  createEffect(
+    on(
+      () => props.stocktake.id,
+      () => setDescription(props.stocktake.description ?? ""),
+    ),
+  );
 
   return (
     <div class="flex flex-col gap-3 py-3">
@@ -46,9 +51,7 @@ export const Toolbar: Component<ToolbarProps> = (props) => {
 
       <Show when={props.disabled}>
         <div class="rounded-lg border border-line bg-brand-light px-3 py-2 text-sm text-fg">
-          {props.stocktake.isLocked
-            ? t("message.on-hold-not-editable")
-            : t("message.finalised-not-editable")}
+          {props.stocktake.isLocked ? t("message.on-hold-not-editable") : t("message.finalised-not-editable")}
         </div>
       </Show>
     </div>

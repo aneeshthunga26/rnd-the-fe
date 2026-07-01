@@ -31,10 +31,7 @@ const customSwatch = (theme: CustomTheme): Swatch => ({
 });
 
 const Swatch: Component<{ colors: Swatch }> = (props) => (
-  <div
-    class="flex h-8 w-12 shrink-0 overflow-hidden rounded-md border border-line"
-    aria-hidden="true"
-  >
+  <div class="flex h-8 w-12 shrink-0 overflow-hidden rounded-md border border-line" aria-hidden="true">
     <div class="flex-1" style={{ "background-color": props.colors.bg }} />
     <div class="flex-1" style={{ "background-color": props.colors.surface }} />
     <div class="flex-1" style={{ "background-color": props.colors.brand }} />

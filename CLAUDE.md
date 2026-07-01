@@ -114,3 +114,4 @@ Avoid React-shaped heavyweight state libraries — Solid's signals/stores are th
 - Feature reference (what to build): `open-msupply/client/packages/inventory/src/Stocktake/`.
 - API: `open-msupply/server/schema.graphql`; endpoint `POST /graphql` (server default port 8000 — confirm locally); use the `v3.0.0-RC` branch with `debug_no_access_control: true`.
 - Perf protocol: `bench-prompt.md`.
+- Tooling/DX: `pnpm lint` (ESLint flat: `typescript-eslint` + `eslint-plugin-solid` + `eslint-config-prettier`; ignores `src/graphql/graphql-env.d.ts`), `pnpm format` (Prettier, 110 width). For inline GraphQL diagnostics (`gql.tada`/graphqlsp), the editor **must use the workspace TypeScript version**; `npx gql.tada doctor` diagnoses setup. See README → Development.

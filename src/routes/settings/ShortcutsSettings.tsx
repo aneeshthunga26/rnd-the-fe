@@ -73,10 +73,7 @@ export const ShortcutsSettings: Component = () => {
                     }}
                     aria-label={t("message.rebind-shortcut", { label: shortcut.label })}
                   >
-                    <Show
-                      when={isRecording()}
-                      fallback={format(parse(shortcuts.bindings()[shortcut.id]))}
-                    >
+                    <Show when={isRecording()} fallback={format(parse(shortcuts.bindings()[shortcut.id]))}>
                       {t("message.press-keys")}
                     </Show>
                   </button>

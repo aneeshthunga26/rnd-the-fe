@@ -9,9 +9,7 @@ import { ShortcutsProvider } from "./shortcuts";
  * hooks like `useNavigate`. ShortcutsProvider lives here (not in Providers.tsx)
  * because its command palette navigates via the router.
  */
-const AppRoot: ParentComponent = (props) => (
-  <ShortcutsProvider>{props.children}</ShortcutsProvider>
-);
+const AppRoot: ParentComponent = (props) => <ShortcutsProvider>{props.children}</ShortcutsProvider>;
 
 const App: Component = () => {
   return (
