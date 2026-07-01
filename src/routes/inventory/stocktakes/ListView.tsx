@@ -13,6 +13,7 @@ import { useNavigate } from "@solidjs/router";
 import { PageActions } from "../../../components/layout/PageHeader";
 import { type Density, DataTable } from "../../../components/table/DataTable";
 import { FilterBar } from "../../../components/table/FilterBar";
+import { FilterMenu } from "../../../components/table/FilterMenu";
 import { TablePagination } from "../../../components/table/TablePagination";
 import { TableToolbar, toolbarBtnClass } from "../../../components/table/TableToolbar";
 import { ColumnPickerMenu } from "../../../components/table/ColumnPickerMenu";
@@ -93,6 +94,18 @@ export const ListView: Component = () => {
   };
 
   const query = useStocktakes(listParams);
+
+  // Which filters have been added via the "Filters" menu. Seeded from the URL so
+  // a shared link with a status already applied shows its control. Adding a
+  // filter reveals its control; "Remove all filters" clears both here and in the URL.
+  const availableFilters = () => [{ key: "status", label: t("label.status") }];
+  const [activeFilters, setActiveFilters] = createSignal<string[]>(
+    url.getFilter("status") ? ["status"] : [],
+  );
+  const clearAllFilters = () => {
+    url.setFilter("status", "");
+    setActiveFilters([]);
+  };
 
   // Controlled table state — signals so Wave-2 menus (columns / settings) can drive them.
   const [rowSelection, setRowSelection] = createSignal<RowSelectionState>({});
@@ -241,19 +254,29 @@ export const ListView: Component = () => {
               </div>
             </Show>
           }
+          menu={
+            <FilterMenu
+              available={availableFilters()}
+              active={activeFilters()}
+              onAdd={(key) => setActiveFilters((a) => [...a, key])}
+              onClearAll={clearAllFilters}
+            />
+          }
         >
-          <Select
-            aria-label={t("label.filter-by-status")}
-            placeholder={t("label.status")}
-            clearable
-            class="min-w-[9rem]"
-            value={url.getFilter("status") ?? ""}
-            onChange={(v) => url.setFilter("status", v)}
-            options={[
-              { value: "NEW", label: t("status.new") },
-              { value: "FINALISED", label: t("status.finalised") },
-            ]}
-          />
+          <Show when={activeFilters().includes("status")}>
+            <Select
+              aria-label={t("label.filter-by-status")}
+              placeholder={t("label.status")}
+              clearable
+              class="min-w-[9rem]"
+              value={url.getFilter("status") ?? ""}
+              onChange={(v) => url.setFilter("status", v)}
+              options={[
+                { value: "NEW", label: t("status.new") },
+                { value: "FINALISED", label: t("status.finalised") },
+              ]}
+            />
+          </Show>
         </FilterBar>
 
         {/* Table region — toolbar buttons + table + pagination.

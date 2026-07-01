@@ -52,7 +52,10 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
   const isMobile = useIsMobile();
   const density = () => props.density ?? "comfortable";
   const rowHeight = () => ROW_HEIGHT[density()];
-  const height = () => props.height ?? "calc(100vh - 300px)";
+  // With an explicit `height` the scroll area is fixed; without one it flexes to
+  // fill the parent (min-h-0 + flex-1), so it doesn't leave whitespace below.
+  const height = () => props.height;
+  const fill = () => !props.height;
 
   const rows = () => props.table.getRowModel().rows;
   const totalWidth = () => props.table.getTotalSize();
@@ -109,14 +112,21 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
   );
 
   return (
-    <div class="flex flex-col overflow-hidden rounded-lg border border-line bg-bg">
+    <div
+      class="flex flex-col overflow-hidden rounded-lg border border-line bg-bg"
+      classList={{ "min-h-0 flex-1": fill() }}
+    >
       <Show
         when={!isMobile()}
         fallback={
           // Mobile (< md): plain (non-virtualized) card list. Fine while page sizes
           // stay modest (server-paginated ~20). If a screen ever uses a large/"all"
           // page size on mobile, reuse the virtualizer here (estimate a card height).
-          <div style={{ height: height() }} class="space-y-3 overflow-auto p-3">
+          <div
+            style={height() ? { height: height() } : undefined}
+            class="space-y-3 overflow-auto p-3"
+            classList={{ "min-h-0 flex-1": fill() }}
+          >
             <For each={rows()}>
               {(row) => (
                 <div
@@ -131,7 +141,12 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
           </div>
         }
       >
-        <div ref={scrollRef} style={{ height: height() }} class="overflow-auto">
+        <div
+          ref={scrollRef}
+          style={height() ? { height: height() } : undefined}
+          class="overflow-auto"
+          classList={{ "min-h-0 flex-1": fill() }}
+        >
           <div style={{ "min-width": `${totalWidth()}px` }}>
             {/* Sticky header */}
             <div
@@ -159,12 +174,19 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
                         </span>
                       </Show>
                       <Show when={header.column.getCanResize()}>
+                        {/* Persistent separator marks the column edge; the wider
+                            transparent area is the resize grab target. */}
                         <div
-                          class="absolute end-0 top-0 h-full w-1 cursor-col-resize opacity-0 hover:bg-brand group-hover:opacity-100"
+                          class="absolute end-0 top-0 z-10 flex h-full w-3 cursor-col-resize items-center justify-end"
                           onMouseDown={header.getResizeHandler()}
                           onTouchStart={header.getResizeHandler()}
                           onClick={(e) => e.stopPropagation()}
-                        />
+                        >
+                          <div
+                            class="h-1/2 w-px bg-line group-hover:bg-brand"
+                            classList={{ "bg-brand": header.column.getIsResizing() }}
+                          />
+                        </div>
                       </Show>
                     </div>
                   );

@@ -130,6 +130,7 @@ export const en = {
     finalise: "Finalise",
     "return-to-stocktakes": "Return to stocktakes",
     "clear-selection": "Clear selection",
+    "remove-all-filters": "Remove all filters",
     // Themes.
     "create-theme": "Create theme",
     "edit-theme": "Edit theme",

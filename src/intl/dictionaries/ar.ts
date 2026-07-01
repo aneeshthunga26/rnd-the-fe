@@ -113,6 +113,7 @@ export const ar: Dictionary = {
     finalise: "إنهاء",
     "return-to-stocktakes": "العودة إلى عمليات الجرد",
     "clear-selection": "مسح التحديد",
+    "remove-all-filters": "إزالة كل عوامل التصفية",
     "create-theme": "إنشاء سمة",
     "edit-theme": "تعديل السمة",
     "delete-theme": "حذف السمة",

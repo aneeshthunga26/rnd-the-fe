@@ -1,7 +1,8 @@
-import { type Accessor, createMemo } from "solid-js";
+import { type Accessor, createMemo, Show } from "solid-js";
 import type { ColumnDef } from "@tanstack/solid-table";
 import type { StocktakeRow } from "./api";
 import { CommentIcon } from "../../../components/icons";
+import { Tooltip } from "../../../components/ui/Tooltip";
 import { selectionColumn } from "../../../components/table/selectionColumn";
 import { useFormat, useI18n } from "../../../intl";
 
@@ -49,6 +50,21 @@ export const useStocktakeColumns = (): Accessor<ColumnDef<StocktakeRow>[]> => {
       header: () => <CommentIcon class="w-4 h-4 text-muted" />,
       size: 60,
       enableSorting: false,
+      // Show the same icon as the header (only when a comment exists); hover or
+      // click reveals the comment text in a tooltip. stopPropagation keeps the
+      // trigger from also firing the row's navigate-to-detail click.
+      cell: (ctx) => {
+        const comment = ctx.getValue<string | null | undefined>();
+        return (
+          <Show when={comment}>
+            <span onClick={(e) => e.stopPropagation()}>
+              <Tooltip content={comment}>
+                <CommentIcon class="w-4 h-4 text-muted" />
+              </Tooltip>
+            </span>
+          </Show>
+        );
+      },
     },
   ]);
   return columns;
