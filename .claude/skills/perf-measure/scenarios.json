@@ -17,7 +17,7 @@
       "readySelector": "div[style*=\"translateY\"]",
       "readyMinCount": 20,
       "dataItemCountSelector": "div[style*=\"translateY\"]",
-      "dataRequestUrlPattern": null
+      "dataRequestUrlPattern": "/graphql"
     }
   ]
 }
