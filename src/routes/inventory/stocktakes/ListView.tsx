@@ -202,7 +202,10 @@ export const ListView: Component = () => {
           <PlusCircleIcon class="w-5 h-5" /> {t("action.new-stocktake")}
         </button>
         <div class="flex items-stretch overflow-hidden rounded-full border border-brand text-brand">
-          <button type="button" class="flex items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-brand-light">
+          <button
+            type="button"
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-brand-light"
+          >
             <UploadIcon class="w-5 h-5" /> {t("action.export-csv")}
           </button>
           <button type="button" class="border-s border-brand px-2 hover:bg-brand-light">
@@ -225,7 +228,11 @@ export const ListView: Component = () => {
                 <PlusCircleIcon class="w-5 h-5" />
               </button>
               <div class="flex items-stretch overflow-hidden rounded-full border border-brand text-brand">
-                <button type="button" title={t("action.export-csv")} class="flex items-center px-2.5 hover:bg-brand-light">
+                <button
+                  type="button"
+                  title={t("action.export-csv")}
+                  class="flex items-center px-2.5 hover:bg-brand-light"
+                >
                   <UploadIcon class="w-5 h-5" />
                 </button>
                 <button type="button" class="border-s border-brand px-1.5 hover:bg-brand-light">

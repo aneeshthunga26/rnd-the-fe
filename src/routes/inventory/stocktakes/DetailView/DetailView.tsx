@@ -191,13 +191,19 @@ const DetailViewInner: Component = () => {
         fallback={
           <div class="p-6">
             <p class="text-danger">{t("message.stocktake-not-found")}</p>
-            <button class="mt-2 text-sm text-brand hover:underline" onClick={() => navigate(ROUTES.stocktakes)}>
+            <button
+              class="mt-2 text-sm text-brand hover:underline"
+              onClick={() => navigate(ROUTES.stocktakes)}
+            >
               {t("action.return-to-stocktakes")}
             </button>
           </div>
         }
       >
-        <Show when={stocktake()} fallback={<div class="p-6 text-muted">{t("message.loading-stocktake")}</div>}>
+        <Show
+          when={stocktake()}
+          fallback={<div class="p-6 text-muted">{t("message.loading-stocktake")}</div>}
+        >
           {(s) => (
             <div class="flex flex-1 overflow-hidden">
               <main class="flex flex-1 flex-col overflow-hidden px-3 pb-2 md:px-6">

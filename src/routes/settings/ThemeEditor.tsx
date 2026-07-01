@@ -12,8 +12,7 @@ interface ThemeEditorProps {
   editing?: CustomTheme;
 }
 
-const uid = () =>
-  `theme-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+const uid = () => `theme-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
 /** Read the current computed value of a CSS variable off `<html>`. */
 const computedVar = (name: string): string => {
@@ -27,7 +26,15 @@ const toHexColor = (value: string): string => {
   const v = value.trim();
   if (/^#[0-9a-fA-F]{6}$/.test(v)) return v.toLowerCase();
   if (/^#[0-9a-fA-F]{3}$/.test(v)) {
-    return "#" + v.slice(1).split("").map((c) => c + c).join("").toLowerCase();
+    return (
+      "#" +
+      v
+        .slice(1)
+        .split("")
+        .map((c) => c + c)
+        .join("")
+        .toLowerCase()
+    );
   }
   if (/^#[0-9a-fA-F]{8}$/.test(v)) return v.slice(0, 7).toLowerCase(); // rgb for the picker; alpha kept via alphaOf
   // Resolve named/rgb() colours via the canvas.
@@ -201,7 +208,9 @@ export const ThemeEditor: Component<ThemeEditorProps> = (props) => {
               "text-muted": (contrast() ?? 0) >= 4.5,
             }}
           >
-            {t("message.contrast-ratio", { ratio: fmt().formatNumber(contrast() ?? 0, { maximumFractionDigits: 2 }) })}{" "}
+            {t("message.contrast-ratio", {
+              ratio: fmt().formatNumber(contrast() ?? 0, { maximumFractionDigits: 2 }),
+            })}{" "}
             {(contrast() ?? 0) >= 4.5 ? t("message.passes-wcag-aa") : t("message.below-wcag-aa")}
           </div>
         </Show>

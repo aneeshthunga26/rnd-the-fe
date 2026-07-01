@@ -66,20 +66,18 @@ const LINE_SORT_KEYS = new Set([
 export const getStocktakeQueries = (storeId: string) => ({
   get: {
     /** A page of stocktakes for the store (server-side filter / sort / paging). */
-    list:
-      (params: StocktakeListParams) =>
-      async (): Promise<StocktakeListResult> => {
-        const data = await request(StocktakesDocument, {
-          storeId,
-          page: { first: params.first, offset: params.offset },
-          sort: params.sortBy ? [{ key: params.sortBy.key, desc: params.sortBy.desc }] : undefined,
-          filter: params.filterBy,
-        });
-        return {
-          rows: [...readFragment(StocktakeRowFragment, data.stocktakes.nodes)],
-          totalCount: data.stocktakes.totalCount,
-        };
-      },
+    list: (params: StocktakeListParams) => async (): Promise<StocktakeListResult> => {
+      const data = await request(StocktakesDocument, {
+        storeId,
+        page: { first: params.first, offset: params.offset },
+        sort: params.sortBy ? [{ key: params.sortBy.key, desc: params.sortBy.desc }] : undefined,
+        filter: params.filterBy,
+      });
+      return {
+        rows: [...readFragment(StocktakeRowFragment, data.stocktakes.nodes)],
+        totalCount: data.stocktakes.totalCount,
+      };
+    },
     /** A single stocktake document by id. Throws if not found. */
     byId: (stocktakeId: string) => async (): Promise<StocktakeDetail> => {
       const data = await request(StocktakeDocument, { stocktakeId, storeId });

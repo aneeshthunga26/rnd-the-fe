@@ -12,7 +12,12 @@ interface LineErrorLike {
   __typename: string;
   description?: string;
   stockLine?: { id: string; itemName?: string | null; batch?: string | null; item?: { code: string } } | null;
-  stocktakeLine?: { id: string; itemName?: string | null; batch?: string | null; item?: { code: string } } | null;
+  stocktakeLine?: {
+    id: string;
+    itemName?: string | null;
+    batch?: string | null;
+    item?: { code: string };
+  } | null;
 }
 
 const toLineError = (error: LineErrorLike): StocktakeLineError => {

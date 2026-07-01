@@ -59,8 +59,9 @@ export interface DraftStocktakeLine {
 const uuid = () => crypto.randomUUID();
 
 // Server line/stockline nested objects → the (fuller) search-input Row shapes.
-const toLocationRow = (l: StocktakeLine["location"] | StockLineForStocktake["location"]): LocationRow | null =>
-  l ? { ...l, volume: 0, volumeUsed: 0 } : null;
+const toLocationRow = (
+  l: StocktakeLine["location"] | StockLineForStocktake["location"],
+): LocationRow | null => (l ? { ...l, volume: 0, volumeUsed: 0 } : null);
 const toNameRow = (m: StocktakeLine["manufacturer"]): NameRow | null =>
   m ? { ...m, isOnHold: false } : null;
 
@@ -88,11 +89,7 @@ export const DraftLine = {
   },
 
   /** An existing stock line not yet counted in this stocktake. */
-  fromStockLine(
-    stocktakeId: string,
-    sl: StockLineForStocktake,
-    countThisLine = false,
-  ): DraftStocktakeLine {
+  fromStockLine(stocktakeId: string, sl: StockLineForStocktake, countThisLine = false): DraftStocktakeLine {
     return {
       id: uuid(),
       stocktakeId,

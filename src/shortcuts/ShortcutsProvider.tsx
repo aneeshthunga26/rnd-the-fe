@@ -15,9 +15,7 @@ import { type BindingMap, SHORTCUT_STORAGE_KEY, SHORTCUTS, type ShortcutId } fro
 
 // Deferred: the palette UI (and its command-list building) loads on first open,
 // not at startup. The global keydown listener + keybinding model stay eager.
-const CommandPalette = lazy(() =>
-  import("./CommandPalette").then((m) => ({ default: m.CommandPalette })),
-);
+const CommandPalette = lazy(() => import("./CommandPalette").then((m) => ({ default: m.CommandPalette })));
 import { type KeyBinding, matches, parse, stringify } from "./keybinding";
 
 export interface ShortcutsContextValue {

@@ -8,12 +8,7 @@ import {
   useContext,
 } from "solid-js";
 import { createStore, produce } from "solid-js/store";
-import {
-  BUILTIN_THEMES,
-  CUSTOM_THEMES_STORAGE_KEY,
-  DEFAULT_THEME,
-  THEME_STORAGE_KEY,
-} from "./config";
+import { BUILTIN_THEMES, CUSTOM_THEMES_STORAGE_KEY, DEFAULT_THEME, THEME_STORAGE_KEY } from "./config";
 import { TOKENS, type ThemeVars } from "./tokens";
 
 /** A user-defined theme: a name + a map of semantic tokens to values. */
