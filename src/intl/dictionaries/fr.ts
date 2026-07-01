@@ -113,6 +113,7 @@ export const fr: Dictionary = {
     finalise: "Finaliser",
     "return-to-stocktakes": "Retour aux inventaires",
     "clear-selection": "Effacer la sélection",
+    "remove-all-filters": "Supprimer tous les filtres",
     "create-theme": "Créer un thème",
     "edit-theme": "Modifier le thème",
     "delete-theme": "Supprimer le thème",
