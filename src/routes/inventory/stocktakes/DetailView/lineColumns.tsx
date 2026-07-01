@@ -1,7 +1,7 @@
 import { type Accessor, createMemo } from "solid-js";
 import type { ColumnDef } from "@tanstack/solid-table";
 import { selectionColumn } from "../../../../components/table/selectionColumn";
-import { usePreferences } from "../../../../components/inputs";
+import { usePreferences } from "../../../../preferences";
 import { useStocktakeLineError } from "../../../../context/stocktakeLineError";
 import { useFormat, useI18n } from "../../../../intl";
 import type { StocktakeLine } from "../api";

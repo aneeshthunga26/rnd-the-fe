@@ -5,15 +5,10 @@ import { useNavigate } from "@solidjs/router";
 import { Modal } from "../../../components/ui/Modal";
 import { Button } from "../../../components/ui/Button";
 import { useFormat, useI18n } from "../../../intl";
-import {
-  type LocationRow,
-  type MasterListRow,
-  MasterListSearchInput,
-  LocationSearchInput,
-  usePreferences,
-  type VvmStatusRow,
-  VVMStatusSearchInput,
-} from "../../../components/inputs";
+import { MasterListSearchInput, type MasterListRow } from "../../../system/MasterList";
+import { LocationSearchInput, type LocationRow } from "../../../system/Location";
+import { VVMStatusSearchInput, type VvmStatusRow } from "../../../system/VvmStatus";
+import { usePreferences } from "../../../preferences";
 import { useCreateStocktake, useStocktakeApi } from "./api";
 
 type StocktakeType = "BLANK" | "FULL" | "FILTERED";

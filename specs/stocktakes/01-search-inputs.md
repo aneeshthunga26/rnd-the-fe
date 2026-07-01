@@ -20,9 +20,11 @@ Reference (behaviour + which query each runs; do not copy React/MUI):
    Debounced text → `loadOptions(search)`; renders label; supports clear. Styled to match app inputs
    (border-line, rounded-lg, text-sm). Reusable across entities.
 
-2. A `search/` (or per-entity `api/`) module with gql.tada docs + a hook per entity. Recommended location:
-   `src/components/inputs/search/<Entity>SearchInput.tsx` each exporting a typed component, plus
-   `src/components/inputs/search/operations.ts` for the shared docs. Entities + queries (all take `storeId`):
+2. A per-entity **`src/system/<Entity>/`** module (NOT `src/components/` — that's presentational-only; see
+   `../conventions.md` + `CLAUDE.md` → "Components vs `system/` modules"). Each module has
+   `Components/<Entity>SearchInput.tsx` (the typed component) + `api/{operations.ts` (gql.tada docs + row
+   type), `use<Entity>.ts` (the query hook), `index.ts}` + a module `index.ts` barrel re-exporting the
+   component + row type. Entities + queries (all take `storeId`):
 
    | Component | Query | Key node fields | Filter/args |
    |---|---|---|---|
@@ -35,20 +37,25 @@ Reference (behaviour + which query each runs; do not copy React/MUI):
    | `ManufacturerSearchInput` | `names(storeId, filter)` | id, name, code | `isManufacturer: true` |
    | `CampaignOrProgramSelect` | `campaigns` + `programs` | id, name | see line-edit spec (09) |
 
-   Put the gql.tada docs in `operations.ts`; each hook = `useQuery` via a small `useSearchApi()` hub
-   reusing `STORE_ID` (mirror the stocktakes `api/` pattern, or inline — these are read-only lists).
+   Put the gql.tada docs in each module's `api/operations.ts`; each `use<Entity>.ts` hook = a small
+   `useQuery` reusing `STORE_ID` (mirror the stocktakes `api/` pattern), taking reactive `Accessor` params
+   (search term, restriction, etc.) read **inside** the `useQuery(() => ({…}))` thunk and returning the query
+   object. `AsyncCombobox` and the `createDebounced`/`resolvePick` helpers (`comboboxUtil.ts`) stay generic in
+   `src/components/inputs/`.
 
 3. **ReasonOptions type filtering** — the reason input filters options by adjustment type. Port the helper
    `getReasonOptionTypes({ isInventoryReduction, isVaccine, isDispensary })` from
    `/Users/aneesh/Projects/open-msupply/client/packages/system/src/.../ReasonOptions` (find it; it maps to
    `ReasonOptionNodeType` values e.g. `PositiveInventoryAdjustment | NegativeInventoryAdjustment` and vaccine
-   variants). Export it for 09/10 to reuse.
+   variants). It lives in `src/system/ReasonOption/getReasonOptionTypes.ts` (re-exported from that module's
+   `index.ts`); export it for 09/10 to reuse.
 
 4. **Preferences** — VVM/donor inputs are preference-gated (`manageVvmStatusForStock`,
    `allowTrackingOfStockByDonor`). Add a tiny `usePreferences()` hook (gql.tada `preferences(storeId)` query
    → the boolean prefs the stocktake screens need). Reference:
    `/Users/aneesh/Projects/open-msupply/client/packages/common/src/authentication/api/hooks/usePreferences.ts`.
-   Export it; 06/08/09 consume it to gate fields.
+   It lives in `src/preferences/usePreferences.ts` (cross-cutting, not an entity — so not under `system/`);
+   06/08/09 consume it to gate fields.
 
 ## Acceptance
 
@@ -57,5 +64,5 @@ gql.tada. `usePreferences()` and `getReasonOptionTypes()` are exported. `pnpm ty
 
 ## Parallel-safety
 
-Creates only new files under `src/components/inputs/`. No edits to ListView/DataTable/detail. Safe with all
-other Wave-2 units.
+Creates only new files under `src/system/<Entity>/` (+ the generic `AsyncCombobox`/`comboboxUtil` in
+`src/components/inputs/`). No edits to ListView/DataTable/detail. Safe with all other Wave-2 units.

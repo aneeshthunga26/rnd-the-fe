@@ -120,6 +120,9 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
       <Show
         when={!isMobile()}
         fallback={
+          // Mobile (< md): plain (non-virtualized) card list. Fine while page sizes
+          // stay modest (server-paginated ~20). If a screen ever uses a large/"all"
+          // page size on mobile, reuse the virtualizer here (estimate a card height).
           <div style={{ height: height() }} class="space-y-3 overflow-auto p-3">
             <For each={rows()}>
               {(row) => (
