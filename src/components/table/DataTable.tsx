@@ -1,32 +1,81 @@
-import { For, type JSX, Show } from "solid-js";
-import { flexRender, type Row, type Table } from "@tanstack/solid-table";
+import { createEffect, For, type JSX, Show } from "solid-js";
+import {
+  type Cell,
+  flexRender,
+  type Header,
+  type Row,
+  type Table,
+} from "@tanstack/solid-table";
 import { createVirtualizer } from "@tanstack/solid-virtual";
 import { useIsMobile } from "../../lib/useMediaQuery";
 
+export type Density = "compact" | "comfortable" | "spacious";
+
+const ROW_HEIGHT: Record<Density, number> = {
+  compact: 32,
+  comfortable: 44,
+  spacious: 56,
+};
+
 interface DataTableProps<TData> {
   table: Table<TData>;
-  /** Row height in px (used by the virtualizer). */
-  rowHeight?: number;
+  /** Row density → row height + padding. Defaults to comfortable. */
+  density?: Density;
   /** Scroll-area height (CSS value). */
   height?: string;
   /** Called when a row body / card is clicked. */
   onRowClick?: (row: TData) => void;
   /** Optional custom card renderer for mobile view; falls back to a generic card. */
   renderCard?: (row: TData) => JSX.Element;
+  /** Optional extra classes per row (e.g. muted styling for placeholder rows). */
+  rowClass?: (row: TData) => string | undefined;
+}
+
+/** Sticky-offset + z-index styles for a pinned column (left/right), else {}. */
+function pinnedStyle<TData>(
+  column: Cell<TData, unknown>["column"] | Header<TData, unknown>["column"],
+): JSX.CSSProperties {
+  const pinned = column.getIsPinned();
+  if (!pinned) return {};
+  return {
+    position: "sticky",
+    "z-index": 1,
+    "background-color": "inherit",
+    ...(pinned === "left"
+      ? { left: `${column.getStart("left")}px` }
+      : { right: `${column.getAfter("right")}px` }),
+  };
 }
 
 /**
- * Generic, reusable table. On desktop: sticky styled header + virtualized body.
- * On mobile (< md breakpoint): the current page's rows render as stacked cards.
+ * Generic, controlled table. Renders purely from the TanStack table instance's
+ * state (selection, visibility, order, pinning, sizing, sorting). Desktop: sticky
+ * styled header + virtualized body; mobile (< md): the page's rows as cards.
  */
 export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
   let scrollRef!: HTMLDivElement;
   const isMobile = useIsMobile();
-  const rowHeight = () => props.rowHeight ?? 44;
+  const density = () => props.density ?? "comfortable";
+  const rowHeight = () => ROW_HEIGHT[density()];
   const height = () => props.height ?? "calc(100vh - 300px)";
 
   const rows = () => props.table.getRowModel().rows;
   const totalWidth = () => props.table.getTotalSize();
+
+  // Left-pinned → center → right-pinned, so headers and cells share one order.
+  const headers = () => {
+    const t = props.table;
+    return [
+      ...(t.getLeftHeaderGroups().at(-1)?.headers ?? []),
+      ...(t.getCenterHeaderGroups().at(-1)?.headers ?? []),
+      ...(t.getRightHeaderGroups().at(-1)?.headers ?? []),
+    ];
+  };
+  const cellsOf = (row: Row<TData>) => [
+    ...row.getLeftVisibleCells(),
+    ...row.getCenterVisibleCells(),
+    ...row.getRightVisibleCells(),
+  ];
 
   const virtualizer = createVirtualizer({
     get count() {
@@ -36,6 +85,15 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
     estimateSize: () => rowHeight(),
     overscan: 10,
   });
+
+  // Density changes the row height → re-measure the virtualizer.
+  createEffect(() => {
+    rowHeight();
+    virtualizer.measure();
+  });
+
+  const sortIndicator = (dir: false | "asc" | "desc") =>
+    dir === "asc" ? "▲" : dir === "desc" ? "▼" : "";
 
   // Generic card fallback: label/value per (string-headed) column.
   const genericCard = (row: Row<TData>) => (
@@ -66,6 +124,7 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
               {(row) => (
                 <div
                   class="cursor-pointer rounded-lg border border-line p-3 hover:bg-row-hover"
+                  classList={{ "bg-brand-light/40": row.getIsSelected() }}
                   onClick={() => props.onRowClick?.(row.original)}
                 >
                   {props.renderCard ? props.renderCard(row.original) : genericCard(row)}
@@ -78,13 +137,41 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
         <div ref={scrollRef} style={{ height: height() }} class="overflow-auto">
           <div style={{ "min-width": `${totalWidth()}px` }}>
             {/* Sticky header */}
-            <div class="sticky top-0 z-10 flex border-b border-line bg-page text-xs font-medium uppercase tracking-wide text-gray-muted">
-              <For each={props.table.getHeaderGroups()[0]?.headers ?? []}>
-                {(header) => (
-                  <div style={{ width: `${header.getSize()}px` }} class="flex items-center px-4 py-3">
-                    {flexRender(header.column.columnDef.header, header.getContext())}
-                  </div>
-                )}
+            <div
+              class="sticky top-0 z-20 flex border-b border-line bg-page text-xs font-medium uppercase tracking-wide text-gray-muted"
+              style={{ height: `${rowHeight()}px` }}
+            >
+              <For each={headers()}>
+                {(header) => {
+                  const canSort = () => header.column.getCanSort();
+                  return (
+                    <div
+                      style={{ width: `${header.getSize()}px`, ...pinnedStyle(header.column) }}
+                      class="group relative flex items-center gap-1 bg-page px-4"
+                      classList={{ "cursor-pointer select-none": canSort() }}
+                      onClick={canSort() ? header.column.getToggleSortingHandler() : undefined}
+                    >
+                      <span class="truncate">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())}
+                      </span>
+                      <Show when={header.column.getIsSorted()}>
+                        <span class="text-[10px] text-brand">
+                          {sortIndicator(header.column.getIsSorted())}
+                        </span>
+                      </Show>
+                      <Show when={header.column.getCanResize()}>
+                        <div
+                          class="absolute end-0 top-0 h-full w-1 cursor-col-resize opacity-0 hover:bg-brand group-hover:opacity-100"
+                          onMouseDown={header.getResizeHandler()}
+                          onTouchStart={header.getResizeHandler()}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </Show>
+                    </div>
+                  );
+                }}
               </For>
             </div>
 
@@ -103,25 +190,28 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
                         height: `${virtualRow.size}px`,
                         transform: `translateY(${virtualRow.start}px)`,
                       }}
-                      class="flex cursor-pointer items-center border-b border-line text-sm text-[#3a3d44] hover:bg-row-hover"
+                      class={`flex cursor-pointer items-center border-b border-line bg-page text-sm text-[#3a3d44] hover:bg-row-hover ${
+                        props.rowClass?.(row().original) ?? ""
+                      }`}
+                      classList={{ "bg-brand-light/40 hover:bg-brand-light/50": row().getIsSelected() }}
                       onClick={() => props.onRowClick?.(row().original)}
                     >
-                      <For each={row().getVisibleCells()}>
-                        {(cell) => {
-                          const cellDef = cell.column.columnDef.cell;
-                          return (
-                            <div
-                              style={{ width: `${cell.column.getSize()}px` }}
-                              class="flex items-center overflow-hidden px-4"
-                            >
-                              {cellDef ? (
-                                flexRender(cellDef, cell.getContext())
-                              ) : (
-                                <span class="truncate">{String(cell.getValue() ?? "")}</span>
-                              )}
-                            </div>
-                          );
-                        }}
+                      <For each={cellsOf(row())}>
+                        {(cell) => (
+                          <div
+                            style={{
+                              width: `${cell.column.getSize()}px`,
+                              ...pinnedStyle(cell.column),
+                            }}
+                            class="flex items-center overflow-hidden px-4"
+                          >
+                            {cell.column.columnDef.cell ? (
+                              flexRender(cell.column.columnDef.cell, cell.getContext())
+                            ) : (
+                              <span class="truncate">{String(cell.getValue() ?? "")}</span>
+                            )}
+                          </div>
+                        )}
                       </For>
                     </div>
                   );

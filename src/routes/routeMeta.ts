@@ -8,6 +8,7 @@ export const ROUTE_TITLES: Record<RoutePath, string> = {
   [ROUTES.stock]: "Stock",
   [ROUTES.locations]: "Locations",
   [ROUTES.stocktakes]: "Stocktakes",
+  [ROUTES.stocktakeDetail]: "Stocktake",
   [ROUTES.distribution]: "Distribution",
   [ROUTES.dispensary]: "Dispensary",
   [ROUTES.reports]: "Reports",

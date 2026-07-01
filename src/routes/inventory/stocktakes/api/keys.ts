@@ -7,6 +7,7 @@ export const makeStocktakeKeys = (storeId: string) => {
     list: () => [...keys.base(), storeId, "list"] as const,
     paramList: (params: unknown) => [...keys.list(), params] as const,
     detail: (id: string) => [...keys.base(), storeId, id] as const,
+    lines: (id: string, params: unknown) => [...keys.detail(id), "lines", params] as const,
   };
   return keys;
 };

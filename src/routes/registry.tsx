@@ -20,6 +20,10 @@ const entries: Entry[] = [
   { path: ROUTES.stock, component: lazy(() => import("./inventory/StockScreen")) },
   { path: ROUTES.locations, component: lazy(() => import("./inventory/LocationsScreen")) },
   { path: ROUTES.stocktakes, component: lazy(() => import("./inventory/stocktakes/StocktakesScreen")) },
+  {
+    path: ROUTES.stocktakeDetail,
+    component: lazy(() => import("./inventory/stocktakes/DetailView/DetailView")),
+  },
   { path: ROUTES.distribution, component: lazy(() => import("./DistributionScreen")) },
   { path: ROUTES.dispensary, component: lazy(() => import("./DispensaryScreen")) },
   { path: ROUTES.reports, component: lazy(() => import("./ReportsScreen")) },

@@ -5,8 +5,6 @@ interface ImportMetaEnv {
   readonly VITE_GRAPHQL_URL?: string;
   /** Store id passed as a variable to every operation. */
   readonly VITE_STORE_ID?: string;
-  /** Set to "true" to use local mock data instead of hitting the server. */
-  readonly VITE_USE_MOCK?: string;
 }
 
 interface ImportMeta {
