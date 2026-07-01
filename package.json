@@ -5,17 +5,24 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "pnpm gql:generate && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit"
+    "gql:generate": "gql.tada generate output",
+    "schema:pull": "cp ../open-msupply/server/schema.graphql ./schema.graphql && pnpm gql:generate",
+    "schema:introspect": "gql.tada generate schema ${VITE_GRAPHQL_URL:-http://localhost:8000/graphql} --output ./schema.graphql && pnpm gql:generate",
+    "typecheck": "pnpm gql:generate && tsc --noEmit"
   },
   "dependencies": {
+    "@0no-co/graphql.web": "^1.3.2",
     "@solidjs/router": "^0.15.3",
+    "@tanstack/solid-query": "^5.101.2",
     "@tanstack/solid-table": "^8.21.3",
     "@tanstack/solid-virtual": "^3.13.31",
+    "gql.tada": "^1.11.2",
     "solid-js": "^1.9.5"
   },
   "devDependencies": {
+    "@0no-co/graphqlsp": "^1.17.3",
     "typescript": "^5.6.0",
     "vite": "^6.0.0",
     "vite-plugin-solid": "^2.11.0"
