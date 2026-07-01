@@ -128,7 +128,7 @@ export const ThemeProvider: ParentComponent = (props) => {
   createEffect(() => {
     // Track dependencies explicitly so the effect re-runs on any of them.
     themeId();
-    customThemes.length;
+    void customThemes.length;
     customThemes.map((c) => c.vars); // track custom var edits (e.g. after save)
     osTick();
     applyTheme();

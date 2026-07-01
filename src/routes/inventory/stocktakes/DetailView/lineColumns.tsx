@@ -50,7 +50,7 @@ export const useLineColumns = (): Accessor<ColumnDef<StocktakeLine>[]> => {
   // Memoised so the array reference stays stable across unrelated reactive reads
   // (the lines table is virtualized — churning column identity would defeat that);
   // recomputes only when prefs (gated columns) or locale (header t()) change.
-  return createMemo(() => {
+  const columns = createMemo(() => {
     const cols: ColumnDef<StocktakeLine>[] = [
       selectionColumn<StocktakeLine>(),
       {
@@ -173,4 +173,5 @@ export const useLineColumns = (): Accessor<ColumnDef<StocktakeLine>[]> => {
 
     return cols;
   });
+  return columns;
 };

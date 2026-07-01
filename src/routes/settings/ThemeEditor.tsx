@@ -113,7 +113,7 @@ export const ThemeEditor: Component<ThemeEditorProps> = (props) => {
   let wasOpen = false;
   createEffect(() => {
     const open = props.open;
-    props.editing; // track: reseed if the target theme changes while open
+    void props.editing; // track: reseed if the target theme changes while open
     if (open && !wasOpen) resetForm();
     wasOpen = open;
   });

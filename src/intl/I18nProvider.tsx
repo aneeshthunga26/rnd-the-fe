@@ -5,6 +5,7 @@ import {
   createContext,
   createEffect,
   createMemo,
+  createResource,
   createSignal,
   type JSX,
 } from "solid-js";
@@ -18,24 +19,24 @@ import {
   matchLocale,
 } from "./config";
 import { type Dictionary, en } from "./dictionaries/en";
-import { ar } from "./dictionaries/ar";
-import { fr } from "./dictionaries/fr";
 
-// NOTE (bundle trade-off): all locale dictionaries are statically imported, so
-// the initial bundle carries every translation up front. For 3 small
-// dictionaries this is negligible and keeps switching synchronous (no flash,
-// no loading state). If the set of locales grows large, switch to per-locale
-// dynamic import() driven by a resource in this provider.
+// Bundle trade-off: only the default/base `en` dictionary is bundled (it's the
+// fallback, the source of the `Dictionary` key type, and avoids an empty first
+// paint). Every other locale loads via dynamic import() so Vite splits it into
+// its own chunk fetched only when that locale is first selected.
+// A failed chunk fetch (offline, or a stale client requesting an old chunk hash
+// after a redeploy) falls back to `en` — the app degrades to English strings
+// rather than crashing (a rejected resource would re-throw through every t()).
+const LOADERS: Record<Locale, () => Promise<Dictionary>> = {
+  en: () => Promise.resolve(en),
+  ar: () => import("./dictionaries/ar").then((m) => m.ar).catch(() => en),
+  fr: () => import("./dictionaries/fr").then((m) => m.fr).catch(() => en),
+};
+
 // The flattened, dotted-key dictionary shape (e.g. "label.status") with `string`
 // leaf values — this is what `t` is typed against. Based on the widened
 // `Dictionary` (not `typeof en`) so values are `string`, not English literals.
 export type FlatDictionary = i18n.Flatten<Dictionary>;
-
-const DICTIONARIES: Record<Locale, FlatDictionary> = {
-  en: i18n.flatten<Dictionary>(en),
-  ar: i18n.flatten(ar),
-  fr: i18n.flatten(fr),
-};
 
 export type Translator = i18n.Translator<FlatDictionary>;
 
@@ -72,10 +73,13 @@ export const I18nProvider: Component<{ children: JSX.Element }> = (props) => {
     }
   };
 
-  // Reactive dictionary + translator: switching `locale()` swaps the dict memo,
-  // which re-runs every `t(...)` read across the app (fine-grained, no manual work).
-  const dict = createMemo(() => DICTIONARIES[locale()]);
-  const t = i18n.translator(dict, i18n.resolveTemplate);
+  // Reactive dictionary + translator: the resource fetches the active locale's
+  // chunk (en resolves synchronously); while a non-default chunk loads, `t`
+  // resolves against `en` so there's no flash of raw keys, then updates when the
+  // resource settles. Switching locale re-runs every `t(...)` read (fine-grained).
+  const [dict] = createResource(locale, (l) => LOADERS[l]());
+  const flat = createMemo<FlatDictionary>(() => i18n.flatten<Dictionary>(dict() ?? en));
+  const t = i18n.translator(flat, i18n.resolveTemplate);
 
   const dir = createMemo<"rtl" | "ltr">(() => dirFor(locale()));
 
