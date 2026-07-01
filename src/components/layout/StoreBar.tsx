@@ -1,5 +1,6 @@
 import { type Component, Show } from "solid-js";
-import { EditIcon, LanguageIcon, StoreIcon, UserIcon } from "../icons";
+import { EditIcon, StoreIcon, UserIcon } from "../icons";
+import { LanguageSelect } from "../inputs/LanguageSelect";
 
 const STORE_NAME = "SMS Liquica Store";
 
@@ -23,9 +24,7 @@ export const StoreBar: Component<{ variant: "sidebar" | "bar"; collapsed?: boole
             <button type="button" class="flex items-center gap-1 hover:text-gray-menu">
               <EditIcon class="w-3.5 h-3.5" /> Edit
             </button>
-            <button type="button" class="flex items-center gap-1 hover:text-gray-menu">
-              <LanguageIcon class="w-3.5 h-3.5" /> English
-            </button>
+            <LanguageSelect triggerClass="flex items-center gap-1 hover:text-gray-menu" iconClass="w-3.5 h-3.5" />
           </div>
         </Show>
       </div>
@@ -42,9 +41,11 @@ export const StoreBar: Component<{ variant: "sidebar" | "bar"; collapsed?: boole
       <button type="button" class="flex flex-1 items-center justify-center gap-1.5 px-2 py-2">
         <UserIcon class="w-4 h-4" /> check
       </button>
-      <button type="button" class="flex flex-1 items-center justify-center gap-1.5 px-2 py-2">
-        <LanguageIcon class="w-4 h-4" /> English
-      </button>
+      <LanguageSelect
+        placement="bottom-end"
+        triggerClass="flex flex-1 items-center justify-center gap-1.5 px-2 py-2"
+        iconClass="w-4 h-4"
+      />
     </div>
   </Show>
 );
