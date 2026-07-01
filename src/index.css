@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+/* Design tokens (approximate open-mSupply look). Tailwind v4 reads these as
+   utility values, e.g. `bg-brand`, `text-gray-menu`, `border-line`. */
+@theme {
+  /* Global breakpoints — kept in sync with src/lib/breakpoints.ts (the JS source
+     of truth for media-query logic). These drive Tailwind's sm:/md:/lg:/xl: variants. */
+  --breakpoint-sm: 40rem; /* 640px */
+  --breakpoint-md: 48rem; /* 768px */
+  --breakpoint-lg: 64rem; /* 1024px */
+  --breakpoint-xl: 80rem; /* 1280px */
+  --breakpoint-2xl: 96rem; /* 1536px */
+
+  --color-brand: #e85c2e;
+  --color-brand-hover: #d24e23;
+  --color-brand-light: #fdeee8;
+
+  --color-line: #e4e6eb;
+  --color-page: #ffffff;
+  --color-sidebar: #f4f5f7;
+
+  --color-gray-menu: #61646b;
+  --color-gray-muted: #8f9299;
+  --color-row-hover: #f7f8fa;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family:
+    "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #1f2126;
+}
+
+/* Full-screen mobile drawer sliding in from the top. */
+@keyframes drawer-slide-down {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.drawer-slide-down {
+  animation: drawer-slide-down 200ms ease-out;
+}

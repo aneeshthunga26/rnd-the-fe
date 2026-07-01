@@ -74,7 +74,16 @@ Avoid React-shaped heavyweight state libraries — Solid's signals/stores are th
 - Fetch through `@tanstack/solid-query` (`useQuery` with a `queryKey`); handle loading/error off the query object. `createResource` only for trivial one-off reads.
 - **Filters and selection live in the URL** (search params via `@solidjs/router`) so state is shareable and back/forward works.
 - **`schema.graphql` is a generated artifact** (the open-mSupply Rust server exports it via `export-graphql-schema`). Don't hand-edit it. Refresh our copy with `pnpm schema:pull` (from a sibling `open-msupply` checkout) or `pnpm schema:introspect` (against a running server); both regenerate `graphql-env.d.ts`.
-- **Vertical structure:** one shared `src/graphql/` (init + client + schema + generated env); each feature/vertical owns its own `api.ts` with colocated documents. Share shapes across verticals with gql.tada **fragments** (compose via the `[Fragment]` arg, unmask with `readFragment`) — there is no shared generated types file to maintain.
+- **Vertical structure:** one shared `src/graphql/` (init + client + schema + generated env); each feature/vertical owns its own `api/` folder with colocated documents. Share shapes across verticals with gql.tada **fragments** (compose via the `[Fragment]` arg, unmask with `readFragment`) — there is no shared generated types file to maintain.
+
+**Data layer organisation** (per-vertical `api/` folder, mirrors open-mSupply; see `routes/inventory/stocktakes/api/`):
+- `operations.ts` — gql.tada documents/fragments + inferred row types (the GraphQL contract).
+- `keys.ts` — a **query-key factory scoped by storeId** (`makeXKeys(storeId)` → `base()`/`list()`/`paramList(p)`/`detail(id)`), prefix-composed so caches invalidate broadly (`base()`) or narrowly (`detail(id)`).
+- `api.ts` — `getXQueries(storeId)` returning grouped fns (`get.list()` etc., higher-order thunks that capture params for the key); mutations added here as plain `async` fns.
+- `useXApi.ts` — the **hub**: the one place that supplies `storeId` (config today, a store context later) and returns `{ ...getXQueries(storeId), storeId, keys }`. Nothing else needs to know where storeId comes from.
+- query/mutation hooks (`useXs.ts`, `useUpdateX.ts`) — thin wrappers: `useQuery(() => ({ queryKey: api.keys.list(), queryFn: api.get.list() }))`; mutations call `useMutation` and invalidate `api.keys.base()` (broad) or `api.keys.detail(id)` (narrow) on success.
+- `index.ts` — barrel; screens import hooks/types from `./api` and never touch `request()`/keys directly.
+- **Screen files stay pure UI**: a `*Screen.tsx` route entry composes views; the list UI lives in `ListView.tsx` (later `DetailView.tsx`) and gets data via the vertical's hooks.
 
 **State & i18n:**
 - Server data in resources; nested editable UI state (the line-edit modal) in **stores**; simple flags in signals ([`02`](docs/solidjs/02-stores.md)).

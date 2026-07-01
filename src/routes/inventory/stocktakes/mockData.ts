@@ -1,4 +1,4 @@
-import type { StocktakeRow } from "./api";
+import type { StocktakeRow } from "./api/operations";
 
 // Deterministic ~200-row mock dataset for offline dev (VITE_USE_MOCK=true).
 // Shaped to match the StocktakeRow fragment so it drops straight into the table.
