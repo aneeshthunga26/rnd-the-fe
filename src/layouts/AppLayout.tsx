@@ -25,7 +25,7 @@ const Shell: ParentComponent = (props) => {
     <Show
       when={isMobile()}
       fallback={
-        <div class="flex h-screen overflow-hidden bg-page">
+        <div class="flex h-screen overflow-hidden bg-bg">
           <Sidebar />
           <main class="flex min-w-0 flex-1 flex-col overflow-hidden">
             <AppBar title={title()} actions={actions()} />
@@ -34,7 +34,7 @@ const Shell: ParentComponent = (props) => {
         </div>
       }
     >
-      <div class="flex h-screen flex-col overflow-hidden bg-page">
+      <div class="flex h-screen flex-col overflow-hidden bg-bg">
         <MobileHeader title={title()} onMenu={() => setDrawerOpen(true)} />
         <main class="flex min-h-0 flex-1 flex-col overflow-hidden">{props.children}</main>
         <StoreBar variant="bar" />

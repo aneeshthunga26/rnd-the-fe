@@ -22,16 +22,16 @@ interface ModalProps {
 export const Modal: Component<ModalProps> = (props) => (
   <Dialog open={props.open} onOpenChange={props.onOpenChange} modal>
     <Dialog.Portal>
-      <Dialog.Overlay class="fixed inset-0 z-50 bg-black/30" />
+      <Dialog.Overlay class="fixed inset-0 z-50 bg-overlay" />
       <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <Dialog.Content
-          class="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl border border-line bg-page text-gray-menu shadow-xl"
+          class="flex max-h-[90vh] w-full flex-col overflow-hidden rounded-xl border border-line bg-bg text-fg shadow-xl"
           style={{ "max-width": props.width ?? "600px", ...(props.height ? { height: props.height } : {}) }}
         >
           <div class="flex items-center justify-between gap-4 border-b border-line px-5 py-3">
-            <Dialog.Title class="text-base font-semibold text-[#3a3d44]">{props.title}</Dialog.Title>
+            <Dialog.Title class="text-base font-semibold text-fg">{props.title}</Dialog.Title>
             <Dialog.CloseButton
-              class="rounded-md p-1 text-gray-muted hover:bg-row-hover"
+              class="rounded-md p-1 text-muted hover:bg-row-hover"
               aria-label="Close"
             >
               <CloseIcon class="h-5 w-5" />

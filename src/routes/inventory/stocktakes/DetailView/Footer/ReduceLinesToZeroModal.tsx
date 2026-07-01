@@ -6,6 +6,7 @@ import {
   ReasonOptionsSearchInput,
   type ReasonOptionRow,
 } from "../../../../../components/inputs";
+import { useI18n } from "../../../../../intl";
 import type { StocktakeLine } from "../../api";
 
 interface Props {
@@ -17,6 +18,7 @@ interface Props {
 
 /** Reduce the selected lines' counted packs to zero (requires a reason when applicable). */
 export const ReduceLinesToZeroModal: Component<Props> = (props) => {
+  const { t } = useI18n();
   const [reason, setReason] = createSignal<ReasonOptionRow | null>(null);
 
   const allVaccines = () => props.selectedRows.length > 0 && props.selectedRows.every((r) => r.item.isVaccine);
@@ -34,26 +36,24 @@ export const ReduceLinesToZeroModal: Component<Props> = (props) => {
     <Modal
       open={props.open}
       onOpenChange={(o) => !o && props.onCancel()}
-      title="Reduce lines to zero"
+      title={t("action.reduce-lines-to-zero")}
       width="480px"
       footer={
         <>
           <Button variant="secondary" onClick={props.onCancel}>
-            Cancel
+            {t("action.cancel")}
           </Button>
           <Button variant="primary" disabled={reasonRequired() && !reason()} onClick={confirm}>
-            OK
+            {t("action.ok")}
           </Button>
         </>
       }
     >
       <div class="flex flex-col gap-3 text-sm">
-        <p class="text-gray-muted">
-          Are you sure you want to reduce the counted quantity of the selected lines to zero?
-        </p>
+        <p class="text-muted">{t("message.confirm-reduce-to-zero")}</p>
         <Show when={reasonRequired()}>
           <label class="flex flex-col gap-1">
-            <span class="text-xs font-medium text-gray-muted">Reason</span>
+            <span class="text-xs font-medium text-muted">{t("label.reason")}</span>
             <ReasonOptionsSearchInput
               value={reason()}
               onChange={setReason}

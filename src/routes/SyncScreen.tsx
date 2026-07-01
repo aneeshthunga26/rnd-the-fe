@@ -1,3 +1,3 @@
 import { Placeholder } from "./_Placeholder";
 
-export default () => <Placeholder title="Sync" />;
+export default () => <Placeholder titleKey="app.sync" />;

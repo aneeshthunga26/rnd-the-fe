@@ -24,11 +24,16 @@ export const Logo: Component<IconProps> = (props) => (
     <path
       d="M20 10l8 4.5v9L20 28l-8-4.5v-9L20 10z"
       fill="none"
-      stroke="#fff"
+      stroke="var(--color-on-brand)"
       stroke-width="2"
       stroke-linejoin="round"
     />
-    <path d="M12 14.5l8 4.5 8-4.5M20 19v9" stroke="#fff" stroke-width="2" stroke-linejoin="round" />
+    <path
+      d="M12 14.5l8 4.5 8-4.5M20 19v9"
+      stroke="var(--color-on-brand)"
+      stroke-width="2"
+      stroke-linejoin="round"
+    />
   </svg>
 );
 
@@ -108,18 +113,35 @@ export const HelpIcon: Component<IconProps> = (p) => (
   </Svg>
 );
 
+// Directional glyphs (chevrons/arrows) mirror under RTL via `rtl:-scale-x-100`.
+const DirectionalSvg: Component<IconProps & { children: JSX.Element }> = (props) => (
+  <svg
+    class={`${props.class ?? "w-5 h-5"} rtl:-scale-x-100`}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="1.8"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    {props.children}
+  </svg>
+);
+
 export const ChevronRightIcon: Component<IconProps> = (p) => (
-  <Svg {...p}>
+  <DirectionalSvg {...p}>
     <path d="M9 6l6 6-6 6" />
-  </Svg>
+  </DirectionalSvg>
 );
 
 export const ChevronLeftIcon: Component<IconProps> = (p) => (
-  <Svg {...p}>
+  <DirectionalSvg {...p}>
     <path d="M15 6l-6 6 6 6" />
-  </Svg>
+  </DirectionalSvg>
 );
 
+// Chevron-down points down (vertical): NOT directional in the RTL sense.
 export const ChevronDownIcon: Component<IconProps> = (p) => (
   <Svg {...p}>
     <path d="M6 9l6 6 6-6" />
@@ -127,15 +149,15 @@ export const ChevronDownIcon: Component<IconProps> = (p) => (
 );
 
 export const ChevronsLeftIcon: Component<IconProps> = (p) => (
-  <Svg {...p}>
+  <DirectionalSvg {...p}>
     <path d="M17 6l-6 6 6 6M11 6l-6 6 6 6" />
-  </Svg>
+  </DirectionalSvg>
 );
 
 export const ChevronsRightIcon: Component<IconProps> = (p) => (
-  <Svg {...p}>
+  <DirectionalSvg {...p}>
     <path d="M7 6l6 6-6 6M13 6l6 6-6 6" />
-  </Svg>
+  </DirectionalSvg>
 );
 
 export const PlusCircleIcon: Component<IconProps> = (p) => (

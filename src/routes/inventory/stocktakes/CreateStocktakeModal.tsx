@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/solid-query";
 import { useNavigate } from "@solidjs/router";
 import { Modal } from "../../../components/ui/Modal";
 import { Button } from "../../../components/ui/Button";
+import { useFormat, useI18n } from "../../../intl";
 import {
   type LocationRow,
   type MasterListRow,
@@ -50,6 +51,8 @@ interface Props {
 }
 
 export const CreateStocktakeModal: Component<Props> = (props) => {
+  const { t } = useI18n();
+  const fmt = useFormat();
   const navigate = useNavigate();
   const api = useStocktakeApi();
   const prefs = usePreferences();
@@ -107,7 +110,7 @@ export const CreateStocktakeModal: Component<Props> = (props) => {
     if (state.masterList) parts.push(`in master list ${state.masterList.name}`);
     if (state.location) parts.push(`in location ${state.location.code}`);
     if (state.expiryDate)
-      parts.push(`that expire before ${new Date(state.expiryDate).toLocaleDateString("en-GB")}`);
+      parts.push(`that expire before ${fmt().formatDate(state.expiryDate)}`);
     if (state.vvmStatus) parts.push(`with VVM status ${state.vvmStatus.description}`);
     if (parts.length === 0) return undefined;
     const filters =
@@ -174,7 +177,7 @@ export const CreateStocktakeModal: Component<Props> = (props) => {
             checked={!state.includeAllItems}
             onChange={() => setState("includeAllItems", false)}
           />
-          Items with stock on hand
+          {t("message.items-with-stock")}
         </label>
         <label class="flex items-center gap-2" classList={{ "opacity-40": disableAll() }}>
           <input
@@ -185,7 +188,7 @@ export const CreateStocktakeModal: Component<Props> = (props) => {
             checked={state.includeAllItems}
             onChange={() => setState("includeAllItems", true)}
           />
-          All items (include out of stock items)
+          {t("message.all-items-out-of-stock")}
         </label>
       </div>
     );
@@ -195,43 +198,41 @@ export const CreateStocktakeModal: Component<Props> = (props) => {
     <Modal
       open={props.open}
       onOpenChange={(o) => !o && close()}
-      title="New stocktake"
+      title={t("action.new-stocktake")}
       width="640px"
       footer={
         <>
           <Button variant="secondary" onClick={close}>
-            Cancel
+            {t("action.cancel")}
           </Button>
           <Button variant="primary" disabled={create.isPending} onClick={onSave}>
-            {create.isPending ? "Saving…" : "OK"}
+            {create.isPending ? t("message.saving") : t("action.ok")}
           </Button>
         </>
       }
     >
       <Show
         when={!create.isPending}
-        fallback={<div class="py-10 text-center text-gray-muted">Creating stocktake…</div>}
+        fallback={<div class="py-10 text-center text-muted">{t("message.creating-stocktake")}</div>}
       >
         <div class="flex flex-col gap-4">
           <div class="flex flex-col gap-2">
-            {radio("FULL", "Create a full stocktake")}
-            {radio("FILTERED", "Create a filtered stocktake")}
-            {radio("BLANK", "Create blank stocktake")}
+            {radio("FULL", t("message.create-full-stocktake"))}
+            {radio("FILTERED", t("message.create-filtered-stocktake"))}
+            {radio("BLANK", t("message.create-blank-stocktake"))}
           </div>
 
           <div class="rounded-lg border border-line p-4">
             <Show when={state.type === "FULL"}>
-              <p class="mb-2 text-sm text-gray-muted">Creating a stocktake for all items in your store.</p>
+              <p class="mb-2 text-sm text-muted">{t("message.full-stocktake-hint")}</p>
               {includeAllSelector(false)}
             </Show>
 
             <Show when={state.type === "FILTERED"}>
-              <p class="mb-3 text-sm text-gray-muted">
-                Select filters below to control which items are included in the stocktake.
-              </p>
+              <p class="mb-3 text-sm text-muted">{t("message.filtered-stocktake-hint")}</p>
               <div class="flex flex-col gap-3">
                 <label class="flex flex-col gap-1 text-sm">
-                  <span class="text-xs font-medium text-gray-muted">Master list</span>
+                  <span class="text-xs font-medium text-muted">{t("label.master-list")}</span>
                   <MasterListSearchInput
                     value={state.masterList}
                     onChange={(v) => setState({ masterList: v, includeAllItems: false })}
@@ -240,7 +241,7 @@ export const CreateStocktakeModal: Component<Props> = (props) => {
                 <Show when={state.masterList}>{includeAllSelector(true)}</Show>
 
                 <label class="flex flex-col gap-1 text-sm">
-                  <span class="text-xs font-medium text-gray-muted">Location</span>
+                  <span class="text-xs font-medium text-muted">{t("label.location")}</span>
                   <LocationSearchInput
                     value={state.location}
                     onChange={(v) => setState({ location: v, includeAllItems: false })}
@@ -248,10 +249,10 @@ export const CreateStocktakeModal: Component<Props> = (props) => {
                 </label>
 
                 <label class="flex flex-col gap-1 text-sm">
-                  <span class="text-xs font-medium text-gray-muted">Items expiring before</span>
+                  <span class="text-xs font-medium text-muted">{t("label.items-expiring-before")}</span>
                   <input
                     type="date"
-                    class="rounded-lg border border-line bg-page px-3 py-2 text-sm"
+                    class="rounded-lg border border-line bg-bg px-3 py-2 text-sm"
                     value={state.expiryDate}
                     onChange={(e) =>
                       setState({ expiryDate: e.currentTarget.value, includeAllItems: false })
@@ -261,7 +262,7 @@ export const CreateStocktakeModal: Component<Props> = (props) => {
 
                 <Show when={prefs().manageVvmStatusForStock}>
                   <label class="flex flex-col gap-1 text-sm">
-                    <span class="text-xs font-medium text-gray-muted">VVM status</span>
+                    <span class="text-xs font-medium text-muted">{t("label.vvm-status")}</span>
                     <VVMStatusSearchInput
                       value={state.vvmStatus}
                       onChange={(v) => setState({ vvmStatus: v, includeAllItems: false })}
@@ -272,20 +273,20 @@ export const CreateStocktakeModal: Component<Props> = (props) => {
             </Show>
 
             <Show when={state.type === "BLANK"}>
-              <p class="text-sm text-gray-muted">You can add items manually after creating the stocktake.</p>
+              <p class="text-sm text-muted">{t("message.blank-stocktake-hint")}</p>
             </Show>
           </div>
 
           <Show
             when={state.type !== "BLANK"}
             fallback={
-              <div class="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
-                This will create a blank stocktake.
+              <div class="rounded-lg border border-success bg-success/10 px-3 py-2 text-sm text-fg">
+                {t("message.will-create-blank")}
               </div>
             }
           >
-            <div class="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
-              {estimate()} {estimate() === 1 ? "line" : "lines"} estimated
+            <div class="rounded-lg border border-brand bg-brand-light px-3 py-2 text-sm text-fg">
+              {t("message.lines-estimated", { count: estimate() })}
             </div>
           </Show>
         </div>

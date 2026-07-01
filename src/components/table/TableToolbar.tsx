@@ -1,9 +1,10 @@
 import { type Component, type JSX } from "solid-js";
 import { ColumnsIcon, FullscreenIcon, SettingsIcon } from "../icons";
+import { useI18n } from "../../intl";
 
 /** Shared styling for the small square toolbar buttons (reused by menu triggers). */
 export const toolbarBtnClass =
-  "flex h-8 w-8 items-center justify-center rounded-md text-gray-menu hover:bg-row-hover";
+  "flex h-8 w-8 items-center justify-center rounded-md text-fg hover:bg-row-hover";
 
 interface TableToolbarProps {
   /** 1st button slot — 03 fills this with the columns picker menu. */
@@ -19,22 +20,25 @@ interface TableToolbarProps {
  * slot: a Wave-2 unit passes its interactive element, otherwise a dummy button
  * renders so the toolbar looks complete.
  */
-export const TableToolbar: Component<TableToolbarProps> = (props) => (
-  <div class="flex items-center justify-end gap-1 px-2 py-1">
-    {props.columns ?? (
-      <button class={toolbarBtnClass} title="Columns" type="button">
-        <ColumnsIcon />
-      </button>
-    )}
-    {props.fullscreen ?? (
-      <button class={toolbarBtnClass} title="Fullscreen" type="button">
-        <FullscreenIcon />
-      </button>
-    )}
-    {props.settings ?? (
-      <button class={toolbarBtnClass} title="Settings" type="button">
-        <SettingsIcon />
-      </button>
-    )}
-  </div>
-);
+export const TableToolbar: Component<TableToolbarProps> = (props) => {
+  const { t } = useI18n();
+  return (
+    <div class="flex items-center justify-end gap-1 px-2 py-1">
+      {props.columns ?? (
+        <button class={toolbarBtnClass} title={t("label.columns")} type="button">
+          <ColumnsIcon />
+        </button>
+      )}
+      {props.fullscreen ?? (
+        <button class={toolbarBtnClass} title={t("action.fullscreen")} type="button">
+          <FullscreenIcon />
+        </button>
+      )}
+      {props.settings ?? (
+        <button class={toolbarBtnClass} title={t("label.table-settings")} type="button">
+          <SettingsIcon />
+        </button>
+      )}
+    </div>
+  );
+};

@@ -2,6 +2,7 @@ import { type Component, createSignal, type JSX } from "solid-js";
 import { PlusCircleIcon } from "../components/icons";
 import { Button } from "../components/ui/Button";
 import type { CustomTheme } from "../theme";
+import { ShortcutsSettings } from "./settings/ShortcutsSettings";
 import { ThemeEditor } from "./settings/ThemeEditor";
 import { ThemeSwitcher } from "./settings/ThemeSwitcher";
 
@@ -56,6 +57,10 @@ const SettingsScreen: Component = () => {
         >
           <ThemeSwitcher onEdit={openEdit} />
         </Section>
+
+        <div class="rounded-xl border border-line bg-surface p-5">
+          <ShortcutsSettings />
+        </div>
       </div>
 
       <ThemeEditor open={editorOpen()} onOpenChange={setEditorOpen} editing={editing()} />

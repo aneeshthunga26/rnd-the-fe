@@ -13,6 +13,7 @@ import {
 } from "../../../../../components/inputs";
 import { useStocktakeLineError } from "../../../../../context/stocktakeLineError";
 import { stocktakeLineErrorMessage } from "../../../../../context/stocktakeLineError";
+import { useI18n } from "../../../../../intl";
 import type { StocktakeLine } from "../../api";
 import { type DraftItem, type DraftStocktakeLine } from "./draft";
 import { useStocktakeLineEdit } from "./useStocktakeLineEdit";
@@ -60,11 +61,12 @@ interface Props {
 }
 
 const cellInput =
-  "w-full rounded border border-line bg-page px-2 py-1 text-sm disabled:bg-row-hover disabled:text-gray-muted";
-const th = "px-2 py-1.5 text-left text-xs font-medium text-gray-muted whitespace-nowrap";
+  "w-full rounded border border-line bg-bg px-2 py-1 text-sm disabled:bg-row-hover disabled:text-muted";
+const th = "px-2 py-1.5 text-start text-xs font-medium text-muted whitespace-nowrap";
 const td = "px-2 py-1 align-middle";
 
 export const StocktakeLineEditModal: Component<Props> = (props) => {
+  const { t } = useI18n();
   const prefs = usePreferences();
   const errors = useStocktakeLineError();
   const [tab, setTab] = createSignal<Tab>("batch");
@@ -132,7 +134,7 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
     <input
       type="checkbox"
       class="h-4 w-4 accent-brand"
-      classList={{ "outline outline-2 outline-red-500": !!errors.getError({ id: line.id }) }}
+      classList={{ "outline outline-2 outline-danger": !!errors.getError({ id: line.id }) }}
       checked={line.countThisLine}
       disabled={props.disabled}
       onChange={(e) => edit({ id: line.id, countThisLine: e.currentTarget.checked })}
@@ -148,7 +150,7 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
     <input
       type="number"
       class={cellInput}
-      classList={{ "border-red-500": opts?.error }}
+      classList={{ "border-danger": opts?.error }}
       value={value ?? ""}
       step={opts?.step}
       disabled={opts?.disabled ?? !editable(line)}
@@ -211,19 +213,19 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
       open={props.open}
       onOpenChange={(o) => !o && props.onClose()}
       width="1120px"
-      title={props.mode === "create" ? "Add item" : "Edit item"}
+      title={props.mode === "create" ? t("action.add-item") : t("action.edit-item")}
       footer={
         <>
           <Button variant="secondary" onClick={props.onClose}>
-            Cancel
+            {t("action.cancel")}
           </Button>
           <Show when={props.mode === "update"}>
             <Button variant="secondary" disabled={!nextItem() || !isValid()} onClick={onNext}>
-              OK & Next
+              {t("action.ok-and-next")}
             </Button>
           </Show>
           <Button variant="primary" disabled={!isValid()} onClick={onOk}>
-            {controller.isSaving() ? "Saving…" : "OK"}
+            {controller.isSaving() ? t("message.saving") : t("action.ok")}
           </Button>
         </>
       }
@@ -232,7 +234,7 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
         {/* Header: item */}
         <div class="flex items-end gap-4">
           <label class="flex flex-col gap-1 text-sm">
-            <span class="text-xs font-medium text-gray-muted">Item</span>
+            <span class="text-xs font-medium text-muted">{t("label.item")}</span>
             <Show
               when={props.mode === "create"}
               fallback={<span class="py-2 font-medium">{props.item?.name}</span>}
@@ -260,7 +262,7 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
             </Show>
           </label>
           <Show when={props.item?.unitName}>
-            <div class="pb-2 text-sm text-gray-muted">Unit: {props.item?.unitName}</div>
+            <div class="pb-2 text-sm text-muted">{t("label.unit")}: {props.item?.unitName}</div>
           </Show>
         </div>
 
@@ -269,7 +271,7 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
           {(line) => {
             const err = errors.getError({ id: line.id })!;
             return (
-              <div class="rounded border border-red-300 bg-red-50 px-3 py-1.5 text-sm text-red-700">
+              <div class="rounded border border-danger bg-danger/10 px-3 py-1.5 text-sm text-danger">
                 {line.batch ? `${line.batch}: ` : ""}
                 {stocktakeLineErrorMessage(err.__typename)}
               </div>
@@ -278,20 +280,28 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
         </For>
         <Show when={banner().length > 0}>
           <For each={banner()}>
-            {(m) => <div class="rounded border border-red-300 bg-red-50 px-3 py-1.5 text-sm text-red-700">{m}</div>}
+            {(m) => <div class="rounded border border-danger bg-danger/10 px-3 py-1.5 text-sm text-danger">{m}</div>}
           </For>
         </Show>
 
         {/* Tabs */}
         <div class="flex items-center gap-1 border-b border-line">
-          <For each={[["batch", "Batch"], ["pricing", "Pricing"], ["other", "Other"]] as const}>
+          <For
+            each={
+              [
+                ["batch", t("label.batch")],
+                ["pricing", t("label.pricing")],
+                ["other", t("label.other")],
+              ] as const
+            }
+          >
             {([key, label]) => (
               <button
                 type="button"
                 class="border-b-2 px-3 py-1.5 text-sm font-medium"
                 classList={{
                   "border-brand text-brand": tab() === key,
-                  "border-transparent text-gray-muted hover:text-[#3a3d44]": tab() !== key,
+                  "border-transparent text-muted hover:text-fg": tab() !== key,
                 }}
                 onClick={() => setTab(key)}
               >
@@ -305,13 +315,13 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
             disabled={props.disabled || !props.item}
             onClick={() => controller.addLine()}
           >
-            + Add batch
+            + {t("action.add-batch")}
           </button>
         </div>
 
         <Show
           when={controller.draftLines.length > 0}
-          fallback={<div class="py-8 text-center text-sm text-gray-muted">Add a new line to begin.</div>}
+          fallback={<div class="py-8 text-center text-sm text-muted">{t("message.add-line-to-begin")}</div>}
         >
           <div class="max-h-[46vh] overflow-auto">
             {/* BATCH */}
@@ -319,18 +329,18 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
               <table class="w-full border-collapse text-sm">
                 <thead>
                   <tr class="border-b border-line">
-                    <th class={th}>Count</th>
-                    <th class={th}>Batch</th>
-                    <th class={th}>Expiry</th>
-                    <th class={th}>Manufactured</th>
+                    <th class={th}>{t("label.count")}</th>
+                    <th class={th}>{t("label.batch")}</th>
+                    <th class={th}>{t("label.expiry")}</th>
+                    <th class={th}>{t("label.manufactured")}</th>
                     <Show when={prefs().manageVvmStatusForStock && props.item?.isVaccine}>
-                      <th class={th}>VVM status</th>
+                      <th class={th}>{t("label.vvm-status")}</th>
                     </Show>
-                    <th class={th}>Pack size</th>
-                    <th class={th}>Snapshot</th>
-                    <th class={th}>Counted</th>
-                    <th class={th}>Volume/pack</th>
-                    <th class={th}>Reason</th>
+                    <th class={th}>{t("label.pack-size")}</th>
+                    <th class={th}>{t("label.snapshot")}</th>
+                    <th class={th}>{t("label.counted")}</th>
+                    <th class={th}>{t("label.volume-per-pack")}</th>
+                    <th class={th}>{t("label.reason")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -361,10 +371,10 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
                             { disabled: !editable(line) || !!line.stockLine },
                           )}
                         </td>
-                        <td class={`${td} text-right`}>
+                        <td class={`${td} text-end`}>
                           <span
                             classList={{
-                              "rounded border border-red-500 px-1":
+                              "rounded border border-danger px-1":
                                 errors.getError({ id: line.id })?.__typename === "SnapshotCountCurrentCountMismatchLine",
                             }}
                           >
@@ -397,10 +407,10 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
               <table class="w-full border-collapse text-sm">
                 <thead>
                   <tr class="border-b border-line">
-                    <th class={th}>Count</th>
-                    <th class={th}>Batch</th>
-                    <th class={th}>Sell price</th>
-                    <th class={th}>Cost price</th>
+                    <th class={th}>{t("label.count")}</th>
+                    <th class={th}>{t("label.batch")}</th>
+                    <th class={th}>{t("label.sell-price")}</th>
+                    <th class={th}>{t("label.cost-price")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -431,14 +441,14 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
               <table class="w-full border-collapse text-sm">
                 <thead>
                   <tr class="border-b border-line">
-                    <th class={th}>Count</th>
-                    <th class={th}>Batch</th>
-                    <th class={th}>Location</th>
+                    <th class={th}>{t("label.count")}</th>
+                    <th class={th}>{t("label.batch")}</th>
+                    <th class={th}>{t("label.location")}</th>
                     <Show when={prefs().allowTrackingOfStockByDonor}>
-                      <th class={th}>Donor</th>
+                      <th class={th}>{t("label.donor")}</th>
                     </Show>
-                    <th class={th}>Manufacturer</th>
-                    <th class={th}>Comment</th>
+                    <th class={th}>{t("label.manufacturer")}</th>
+                    <th class={th}>{t("label.comment")}</th>
                   </tr>
                 </thead>
                 <tbody>

@@ -1,28 +1,36 @@
 import { type Component, For, Show } from "solid-js";
 import { CheckIcon, DeleteIcon, EditIcon } from "../../components/icons";
+import { useI18n } from "../../intl";
 import { type CustomTheme, useTheme } from "../../theme";
 
-/** Human labels for the builtin theme ids. */
-const BUILTIN_LABELS: Record<string, string> = {
-  light: "Light",
-  dark: "Dark",
-  system: "System",
+type BuiltinLabelKey = "label.light" | "label.dark" | "label.system";
+
+/** i18n key for a builtin theme id. */
+const builtinLabelKey = (id: string): BuiltinLabelKey =>
+  id === "light" ? "label.light" : id === "system" ? "label.system" : "label.dark";
+
+type Swatch = { bg: string; surface: string; brand: string };
+
+/**
+ * Fixed swatch colours for the builtin previews (mirrors the token defaults in
+ * index.css). These are literal preview colours by design — a swatch must show a
+ * theme's colours regardless of the currently-active theme, and "system" blends
+ * light/dark — so they intentionally aren't semantic tokens (which follow the
+ * active theme).
+ */
+const builtinSwatch = (id: string): Swatch => {
+  if (id === "light") return { bg: "rgb(255 255 255)", surface: "rgb(244 245 247)", brand: "rgb(232 92 46)" };
+  if (id === "system") return { bg: "rgb(255 255 255)", surface: "rgb(31 34 41)", brand: "rgb(232 92 46)" };
+  return { bg: "rgb(22 24 29)", surface: "rgb(31 34 41)", brand: "rgb(232 92 46)" };
 };
 
-/** Fixed swatch colours for the builtin previews (matches index.css). */
-const BUILTIN_SWATCHES: Record<string, { bg: string; surface: string; brand: string }> = {
-  light: { bg: "#ffffff", surface: "#f4f5f7", brand: "#e85c2e" },
-  dark: { bg: "#16181d", surface: "#1f2229", brand: "#e85c2e" },
-  system: { bg: "#ffffff", surface: "#1f2229", brand: "#e85c2e" },
-};
-
-const customSwatch = (theme: CustomTheme) => ({
-  bg: theme.vars["--color-bg"] ?? "#ffffff",
-  surface: theme.vars["--color-surface"] ?? "#f4f5f7",
-  brand: theme.vars["--color-brand"] ?? "#e85c2e",
+const customSwatch = (theme: CustomTheme): Swatch => ({
+  bg: theme.vars["--color-bg"] ?? "rgb(255 255 255)",
+  surface: theme.vars["--color-surface"] ?? "rgb(244 245 247)",
+  brand: theme.vars["--color-brand"] ?? "rgb(232 92 46)",
 });
 
-const Swatch: Component<{ colors: { bg: string; surface: string; brand: string } }> = (props) => (
+const Swatch: Component<{ colors: Swatch }> = (props) => (
   <div
     class="flex h-8 w-12 shrink-0 overflow-hidden rounded-md border border-line"
     aria-hidden="true"
@@ -44,6 +52,7 @@ interface ThemeSwitcherProps {
  * theme live via `setTheme`. Custom themes carry Edit / Delete actions.
  */
 export const ThemeSwitcher: Component<ThemeSwitcherProps> = (props) => {
+  const { t } = useI18n();
   const theme = useTheme();
 
   return (
@@ -59,8 +68,8 @@ export const ThemeSwitcher: Component<ThemeSwitcherProps> = (props) => {
               "border-line": theme.themeId() !== id,
             }}
           >
-            <Swatch colors={BUILTIN_SWATCHES[id]} />
-            <span class="flex-1 text-sm font-medium text-fg">{BUILTIN_LABELS[id]}</span>
+            <Swatch colors={builtinSwatch(id)} />
+            <span class="flex-1 text-sm font-medium text-fg">{t(builtinLabelKey(id))}</span>
             <Show when={theme.themeId() === id}>
               <CheckIcon class="h-5 w-5 text-brand" />
             </Show>
@@ -90,8 +99,8 @@ export const ThemeSwitcher: Component<ThemeSwitcherProps> = (props) => {
             </button>
             <button
               type="button"
-              title="Edit theme"
-              aria-label="Edit theme"
+              title={t("action.edit-theme")}
+              aria-label={t("action.edit-theme")}
               onClick={() => props.onEdit(custom)}
               class="rounded-md p-1 text-muted hover:bg-row-hover"
             >
@@ -99,8 +108,8 @@ export const ThemeSwitcher: Component<ThemeSwitcherProps> = (props) => {
             </button>
             <button
               type="button"
-              title="Delete theme"
-              aria-label="Delete theme"
+              title={t("action.delete-theme")}
+              aria-label={t("action.delete-theme")}
               onClick={() => theme.deleteCustomTheme(custom.id)}
               class="rounded-md p-1 text-danger hover:bg-row-hover"
             >

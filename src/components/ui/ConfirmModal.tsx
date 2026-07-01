@@ -31,6 +31,6 @@ export const ConfirmModal: Component<ConfirmModalProps> = (props) => (
       </>
     }
   >
-    <div class="text-sm text-gray-menu">{props.message}</div>
+    <div class="text-sm text-fg">{props.message}</div>
   </Modal>
 );

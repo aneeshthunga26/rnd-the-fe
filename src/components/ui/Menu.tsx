@@ -28,11 +28,11 @@ export const Menu: Component<MenuProps> = (props) => (
     </Popover.Trigger>
     <Popover.Portal>
       <Popover.Content
-        class="z-50 overflow-hidden rounded-lg border border-line bg-page text-sm text-gray-menu shadow-xl focus:outline-none"
+        class="z-50 overflow-hidden rounded-lg border border-line bg-bg text-sm text-fg shadow-xl focus:outline-none"
         style={{ width: props.width ?? "16rem" }}
       >
         <Show when={props.title}>
-          <div class="border-b border-line px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-muted">
+          <div class="border-b border-line px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted">
             {props.title}
           </div>
         </Show>
@@ -53,8 +53,8 @@ export const MenuItem: Component<{
     type="button"
     disabled={props.disabled}
     onClick={() => props.onClick()}
-    class="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-row-hover disabled:cursor-not-allowed disabled:opacity-40"
-    classList={{ "text-red-600": props.tone === "danger" }}
+    class="flex w-full items-center gap-2 px-3 py-2 text-start hover:bg-row-hover disabled:cursor-not-allowed disabled:opacity-40"
+    classList={{ "text-danger": props.tone === "danger" }}
   >
     {props.children}
   </button>

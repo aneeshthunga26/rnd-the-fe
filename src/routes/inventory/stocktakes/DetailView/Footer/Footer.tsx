@@ -4,6 +4,7 @@ import { ConfirmModal } from "../../../../../components/ui/ConfirmModal";
 import { Button } from "../../../../../components/ui/Button";
 import { DeleteIcon, LocationIcon, LockIcon, ZeroIcon } from "../../../../../components/icons";
 import { useStocktakeLineError } from "../../../../../context/stocktakeLineError";
+import { useFormat, useI18n } from "../../../../../intl";
 import type { LocationRow, ReasonOptionRow } from "../../../../../components/inputs";
 import {
   type StocktakeDetail,
@@ -13,7 +14,6 @@ import {
   useUpdateStocktake,
 } from "../../api";
 import { getNextStocktakeStatus } from "../../utils";
-import { formatDate } from "../../columns";
 import { DraftLine, type DraftStocktakeLine } from "../modal/draft";
 import { ChangeLocationModal } from "./ChangeLocationModal";
 import { ReduceLinesToZeroModal } from "./ReduceLinesToZeroModal";
@@ -32,6 +32,8 @@ interface FooterProps {
 type ConfirmKind = "lock" | "finalise" | "delete" | null;
 
 export const Footer: Component<FooterProps> = (props) => {
+  const { t } = useI18n();
+  const fmt = useFormat();
   const errors = useStocktakeLineError();
   const stocktakeId = () => props.stocktake.id;
   const update = useUpdateStocktake();
@@ -99,7 +101,7 @@ export const Footer: Component<FooterProps> = (props) => {
         });
       }
     } else {
-      errors.setStocktakeErrors([error.description ?? "This stocktake cannot be edited."]);
+      errors.setStocktakeErrors([error.description ?? t("message.cannot-edit-stocktake")]);
     }
     errors.openModal();
   };
@@ -118,20 +120,20 @@ export const Footer: Component<FooterProps> = (props) => {
           onClear={props.resetSelection}
           actions={[
             {
-              label: "Delete lines",
+              label: t("action.delete-lines"),
               tone: "danger",
               icon: <DeleteIcon class="h-4 w-4" />,
               disabled: props.disabled,
               onClick: () => setConfirm("delete"),
             },
             {
-              label: "Change location",
+              label: t("action.change-location"),
               icon: <LocationIcon class="h-4 w-4" />,
               disabled: props.disabled,
               onClick: () => setChangeLocationOpen(true),
             },
             {
-              label: "Reduce to zero",
+              label: t("action.reduce-to-zero"),
               icon: <ZeroIcon class="h-4 w-4" />,
               disabled: props.disabled,
               onClick: () => setReduceOpen(true),
@@ -142,7 +144,7 @@ export const Footer: Component<FooterProps> = (props) => {
 
       {/* No-selection mode: lock + status crumbs + finalise */}
       <Show when={props.selectedRows.length === 0}>
-        <div class="flex items-center gap-6 border-t border-line bg-page px-4 py-2.5">
+        <div class="flex items-center gap-6 border-t border-line bg-bg px-4 py-2.5">
           <Show when={!(props.disabled && !props.stocktake.isLocked)}>
             <button
               type="button"
@@ -151,25 +153,25 @@ export const Footer: Component<FooterProps> = (props) => {
               class="flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium disabled:opacity-40"
               classList={{
                 "border-brand bg-brand-light text-brand": props.stocktake.isLocked,
-                "border-line text-gray-menu hover:bg-row-hover": !props.stocktake.isLocked,
+                "border-line text-fg hover:bg-row-hover": !props.stocktake.isLocked,
               }}
             >
-              <LockIcon class="h-4 w-4" /> On hold
+              <LockIcon class="h-4 w-4" /> {t("action.on-hold")}
             </button>
           </Show>
 
-          <div class="flex items-center gap-3 text-sm text-gray-muted">
+          <div class="flex items-center gap-3 text-sm text-muted">
             <For
               each={[
-                ["New", props.stocktake.createdDatetime] as const,
-                ["Finalised", props.stocktake.finalisedDatetime] as const,
+                [t("status.new"), props.stocktake.createdDatetime] as const,
+                [t("status.finalised"), props.stocktake.finalisedDatetime] as const,
               ]}
             >
               {([label, when]) => (
                 <div class="flex items-center gap-1">
-                  <span classList={{ "font-medium text-[#3a3d44]": !!when }}>{label}</span>
+                  <span classList={{ "font-medium text-fg": !!when }}>{label}</span>
                   <Show when={when}>
-                    <span class="text-xs">{formatDate(when)}</span>
+                    <span class="text-xs">{fmt().formatDate(when)}</span>
                   </Show>
                 </div>
               )}
@@ -181,10 +183,10 @@ export const Footer: Component<FooterProps> = (props) => {
               class="ms-auto"
               variant="primary"
               disabled={props.disableFinalise || update.isPending}
-              title={props.disableFinalise ? "Add and count at least one line before finalising" : undefined}
+              title={props.disableFinalise ? t("message.finalise-needs-lines") : undefined}
               onClick={() => setConfirm("finalise")}
             >
-              Save and confirm status: Finalised
+              {t("message.save-and-confirm-finalised")}
             </Button>
           </Show>
         </div>
@@ -193,29 +195,25 @@ export const Footer: Component<FooterProps> = (props) => {
       {/* Confirmations */}
       <ConfirmModal
         open={confirm() === "lock"}
-        title="Are you sure?"
-        message={
-          props.stocktake.isLocked
-            ? "This will take the stocktake off hold and allow editing."
-            : "This will put the stocktake on hold and prevent editing."
-        }
+        title={t("message.confirm-finalise-title")}
+        message={props.stocktake.isLocked ? t("message.confirm-unlock") : t("message.confirm-lock")}
         onConfirm={onLock}
         onCancel={() => setConfirm(null)}
       />
       <ConfirmModal
         open={confirm() === "finalise"}
-        title="Are you sure?"
-        message="Confirm the stocktake status as Finalised? This cannot be undone."
-        confirmLabel="Finalise"
+        title={t("message.confirm-finalise-title")}
+        message={t("message.confirm-finalise")}
+        confirmLabel={t("action.finalise")}
         onConfirm={onFinalise}
         onCancel={() => setConfirm(null)}
       />
       <ConfirmModal
         open={confirm() === "delete"}
         tone="danger"
-        title="Delete lines"
-        message={`Delete ${props.selectedRows.length} selected line(s)?`}
-        confirmLabel="Delete"
+        title={t("action.delete-lines")}
+        message={t("message.confirm-delete-lines", { count: props.selectedRows.length })}
+        confirmLabel={t("action.delete")}
         onConfirm={onDeleteLines}
         onCancel={() => setConfirm(null)}
       />

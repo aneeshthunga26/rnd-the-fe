@@ -7,6 +7,7 @@ import {
 } from "@tanstack/solid-table";
 import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
 import { StocktakeLineErrorProvider } from "../../../../context/stocktakeLineError";
+import { useI18n } from "../../../../intl";
 import { ROUTES } from "../../../routes";
 import { DataTable } from "../../../../components/table/DataTable";
 import { ChevronLeftIcon, PlusCircleIcon } from "../../../../components/icons";
@@ -43,6 +44,7 @@ const LINE_SORT_KEYS = new Set<StocktakeLineSortKey>([
 ]);
 
 const DetailViewInner: Component = () => {
+  const { t } = useI18n();
   const params = useParams();
   const navigate = useNavigate();
   const id = () => params.id ?? "";
@@ -159,14 +161,16 @@ const DetailViewInner: Component = () => {
           class="flex items-center gap-1 text-sm text-brand hover:underline"
           onClick={() => navigate(ROUTES.stocktakes)}
         >
-          <ChevronLeftIcon class="h-4 w-4" /> Stocktakes
+          <ChevronLeftIcon class="h-4 w-4" /> {t("app.stocktakes")}
         </button>
         <Show when={stocktake()}>
           {(s) => (
             <div class="flex flex-1 items-center gap-2">
-              <span class="text-lg font-semibold">Stocktake #{s().stocktakeNumber}</span>
+              <span class="text-lg font-semibold">
+                {t("app.stocktake")} #{s().stocktakeNumber}
+              </span>
               <span class="rounded-full bg-brand-light px-2 py-0.5 text-xs font-medium text-brand">
-                {s().isLocked ? "On Hold" : s().status}
+                {s().isLocked ? t("status.on-hold") : s().status}
               </span>
               <Show when={!disabled()}>
                 <button
@@ -174,7 +178,7 @@ const DetailViewInner: Component = () => {
                   class="ms-auto flex items-center gap-1.5 rounded-full border border-brand px-3 py-1.5 text-sm font-medium text-brand hover:bg-brand-light"
                   onClick={() => openLineEdit(null, "create")}
                 >
-                  <PlusCircleIcon class="h-4 w-4" /> Add item
+                  <PlusCircleIcon class="h-4 w-4" /> {t("action.add-item")}
                 </button>
               </Show>
             </div>
@@ -186,14 +190,14 @@ const DetailViewInner: Component = () => {
         when={!query.isError}
         fallback={
           <div class="p-6">
-            <p class="text-red-600">Stocktake not found.</p>
+            <p class="text-danger">{t("message.stocktake-not-found")}</p>
             <button class="mt-2 text-sm text-brand hover:underline" onClick={() => navigate(ROUTES.stocktakes)}>
-              Return to stocktakes
+              {t("action.return-to-stocktakes")}
             </button>
           </div>
         }
       >
-        <Show when={stocktake()} fallback={<div class="p-6 text-gray-muted">Loading stocktake…</div>}>
+        <Show when={stocktake()} fallback={<div class="p-6 text-muted">{t("message.loading-stocktake")}</div>}>
           {(s) => (
             <div class="flex flex-1 overflow-hidden">
               <main class="flex flex-1 flex-col overflow-hidden px-3 pb-2 md:px-6">
@@ -211,7 +215,7 @@ const DetailViewInner: Component = () => {
                     table={table}
                     height="calc(100vh - 320px)"
                     onRowClick={(row) => openLineEdit(row.item)}
-                    rowClass={(row) => (isUncounted(row) ? "text-gray-muted" : undefined)}
+                    rowClass={(row) => (isUncounted(row) ? "text-muted" : undefined)}
                   />
                 </div>
 

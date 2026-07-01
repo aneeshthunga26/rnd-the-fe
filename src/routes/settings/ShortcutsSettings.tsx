@@ -2,6 +2,7 @@ import { type Component, createMemo, createSignal, For, Show } from "solid-js";
 import { SHORTCUTS, type ShortcutId } from "../../shortcuts/config";
 import { format, fromEvent, isModifierKey, parse, stringify } from "../../shortcuts/keybinding";
 import { useShortcuts } from "../../shortcuts/useShortcuts";
+import { useI18n } from "../../intl";
 
 /**
  * "Keyboard shortcuts" settings section: lists each rebindable shortcut with
@@ -10,6 +11,7 @@ import { useShortcuts } from "../../shortcuts/useShortcuts";
  * phase wires it into the Settings screen.
  */
 export const ShortcutsSettings: Component = () => {
+  const { t } = useI18n();
   const shortcuts = useShortcuts();
   const [recording, setRecording] = createSignal<ShortcutId | null>(null);
 
@@ -44,7 +46,7 @@ export const ShortcutsSettings: Component = () => {
 
   return (
     <section class="space-y-3">
-      <h2 class="text-base font-semibold text-fg">Keyboard shortcuts</h2>
+      <h2 class="text-base font-semibold text-fg">{t("label.keyboard-shortcuts")}</h2>
       <ul class="divide-y divide-line rounded-lg border border-line">
         <For each={SHORTCUTS}>
           {(shortcut) => {
@@ -55,7 +57,7 @@ export const ShortcutsSettings: Component = () => {
                 <div class="min-w-0">
                   <div class="text-sm text-fg">{shortcut.label}</div>
                   <Show when={inConflict()}>
-                    <div class="text-xs text-danger">Conflicts with another shortcut</div>
+                    <div class="text-xs text-danger">{t("message.shortcut-conflict")}</div>
                   </Show>
                 </div>
                 <div class="flex items-center gap-2">
@@ -69,13 +71,13 @@ export const ShortcutsSettings: Component = () => {
                       "border-brand text-brand bg-brand-light": isRecording(),
                       "border-line text-fg bg-surface hover:bg-row-hover": !isRecording(),
                     }}
-                    aria-label={`Rebind ${shortcut.label}`}
+                    aria-label={t("message.rebind-shortcut", { label: shortcut.label })}
                   >
                     <Show
                       when={isRecording()}
                       fallback={format(parse(shortcuts.bindings()[shortcut.id]))}
                     >
-                      Press keys...
+                      {t("message.press-keys")}
                     </Show>
                   </button>
                   <button
@@ -83,7 +85,7 @@ export const ShortcutsSettings: Component = () => {
                     onClick={() => shortcuts.resetBinding(shortcut.id)}
                     class="rounded-md border border-line bg-surface px-3 py-1.5 text-sm text-muted hover:bg-row-hover"
                   >
-                    Reset
+                    {t("action.reset")}
                   </button>
                 </div>
               </li>

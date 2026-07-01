@@ -2,6 +2,7 @@ import { type Component, createEffect, createMemo, createSignal, For, Show } fro
 import { createStore } from "solid-js/store";
 import { Button } from "../../components/ui/Button";
 import { Modal } from "../../components/ui/Modal";
+import { useFormat, useI18n } from "../../intl";
 import { type CustomTheme, TOKENS, type ThemeVar, type ThemeVars, useTheme } from "../../theme";
 
 interface ThemeEditorProps {
@@ -28,7 +29,7 @@ const toHexColor = (value: string): string => {
   if (/^#[0-9a-fA-F]{3}$/.test(v)) {
     return "#" + v.slice(1).split("").map((c) => c + c).join("").toLowerCase();
   }
-  if (/^#[0-9a-fA-F]{8}$/.test(v)) return v.slice(0, 7).toLowerCase(); // drop alpha for the picker
+  if (/^#[0-9a-fA-F]{8}$/.test(v)) return v.slice(0, 7).toLowerCase(); // rgb for the picker; alpha kept via alphaOf
   // Resolve named/rgb() colours via the canvas.
   if (typeof document !== "undefined") {
     try {
@@ -44,6 +45,16 @@ const toHexColor = (value: string): string => {
     }
   }
   return "#000000";
+};
+
+/**
+ * The 2-char alpha suffix of an 8-digit hex (e.g. `#00000030` → `"30"`), else `""`.
+ * `<input type=color>` is RGB-only, so we edit the `#rrggbb` part and re-append this
+ * on preview/save to keep translucent tokens (e.g. `--color-overlay`) translucent.
+ */
+const alphaOf = (value: string): string => {
+  const m = /^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})$/.exec(value.trim());
+  return m ? m[1].toLowerCase() : "";
 };
 
 /** Relative luminance (WCAG) of a `#rrggbb` colour. */
@@ -71,20 +82,30 @@ const contrastRatio = (a: string, b: string): number => {
  * activates the new theme.
  */
 export const ThemeEditor: Component<ThemeEditorProps> = (props) => {
+  const { t } = useI18n();
+  const fmt = useFormat();
   const theme = useTheme();
+  const defaultName = () => t("label.name");
 
-  const seed = (): { name: string; vars: Record<string, string> } => {
+  const seed = (): { name: string; vars: Record<string, string>; alpha: Record<string, string> } => {
     const vars: Record<string, string> = {};
-    for (const t of TOKENS) {
-      const fromEdit = props.editing?.vars[t.var];
-      vars[t.var] = toHexColor(fromEdit ?? computedVar(t.var));
+    const alpha: Record<string, string> = {};
+    for (const token of TOKENS) {
+      const src = props.editing?.vars[token.var] ?? computedVar(token.var);
+      vars[token.var] = toHexColor(src);
+      alpha[token.var] = alphaOf(src);
     }
-    return { name: props.editing?.name ?? "My theme", vars };
+    return { name: props.editing?.name ?? defaultName(), vars, alpha };
   };
 
-  const [name, setName] = createSignal("My theme");
+  const [name, setName] = createSignal("");
   const [vars, setVars] = createStore<Record<string, string>>({});
+  // Per-token alpha suffix ("" for opaque tokens), preserved across the RGB picker.
+  const [alpha, setAlpha] = createStore<Record<string, string>>({});
   const [id, setId] = createSignal("");
+
+  /** The full value to apply/persist: picked #rrggbb + any preserved alpha. */
+  const applied = (varName: string, rgb: string) => rgb + (alpha[varName] ?? "");
 
   // (Re)seed the form each time the editor opens (tracks `editing` too, so
   // opening it for a different theme reseeds). The Modal stays mounted and just
@@ -101,9 +122,10 @@ export const ThemeEditor: Component<ThemeEditorProps> = (props) => {
     const s = seed();
     setName(s.name);
     setVars(s.vars);
+    setAlpha(s.alpha);
     setId(props.editing?.id ?? uid());
-    // Apply the seed as a live preview immediately.
-    for (const [k, v] of Object.entries(s.vars)) applyPreview(k, v);
+    // Apply the seed as a live preview immediately (re-appending preserved alpha).
+    for (const [k, v] of Object.entries(s.vars)) applyPreview(k, v + (s.alpha[k] ?? ""));
   };
 
   const applyPreview = (name: string, value: string) => {
@@ -112,7 +134,7 @@ export const ThemeEditor: Component<ThemeEditorProps> = (props) => {
 
   const onColorInput = (varName: ThemeVar, value: string) => {
     setVars(varName, value);
-    applyPreview(varName, value);
+    applyPreview(varName, applied(varName, value));
   };
 
   const groups = createMemo(() => {
@@ -135,8 +157,8 @@ export const ThemeEditor: Component<ThemeEditorProps> = (props) => {
 
   const save = () => {
     const built: ThemeVars = {};
-    for (const t of TOKENS) built[t.var] = vars[t.var];
-    const custom: CustomTheme = { id: id(), name: name().trim() || "Untitled", vars: built };
+    for (const token of TOKENS) built[token.var] = applied(token.var, vars[token.var]);
+    const custom: CustomTheme = { id: id(), name: name().trim() || defaultName(), vars: built };
     theme.saveCustomTheme(custom);
     theme.setTheme(custom.id);
     props.onOpenChange(false);
@@ -146,28 +168,28 @@ export const ThemeEditor: Component<ThemeEditorProps> = (props) => {
     <Modal
       open={props.open}
       onOpenChange={(o) => (o ? props.onOpenChange(true) : cancel())}
-      title={props.editing ? "Edit theme" : "Create theme"}
+      title={props.editing ? t("action.edit-theme") : t("action.create-theme")}
       width="560px"
       footer={
         <>
           <Button variant="ghost" onClick={cancel}>
-            Cancel
+            {t("action.cancel")}
           </Button>
           <Button variant="primary" onClick={save}>
-            Save theme
+            {t("action.save-theme")}
           </Button>
         </>
       }
     >
       <div class="flex flex-col gap-5">
         <label class="flex flex-col gap-1">
-          <span class="text-xs font-semibold uppercase tracking-wide text-muted">Name</span>
+          <span class="text-xs font-semibold uppercase tracking-wide text-muted">{t("label.name")}</span>
           <input
             type="text"
             value={name()}
             onInput={(e) => setName(e.currentTarget.value)}
             class="rounded-md border border-line bg-bg px-3 py-2 text-sm text-fg focus:border-brand focus:outline-none"
-            placeholder="My theme"
+            placeholder={defaultName()}
           />
         </label>
 
@@ -179,8 +201,8 @@ export const ThemeEditor: Component<ThemeEditorProps> = (props) => {
               "text-muted": (contrast() ?? 0) >= 4.5,
             }}
           >
-            Text / background contrast: {(contrast() ?? 0).toFixed(2)}:1{" "}
-            {(contrast() ?? 0) >= 4.5 ? "(passes WCAG AA)" : "(below WCAG AA — 4.5:1)"}
+            {t("message.contrast-ratio", { ratio: fmt().formatNumber(contrast() ?? 0, { maximumFractionDigits: 2 }) })}{" "}
+            {(contrast() ?? 0) >= 4.5 ? t("message.passes-wcag-aa") : t("message.below-wcag-aa")}
           </div>
         </Show>
 

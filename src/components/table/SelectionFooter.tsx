@@ -1,4 +1,5 @@
 import { For, type JSX, Show } from "solid-js";
+import { useI18n } from "../../intl";
 
 export interface FooterAction {
   label: string;
@@ -22,10 +23,11 @@ interface SelectionFooterProps {
  * when nothing is selected. Reusable across list and detail tables.
  */
 export function SelectionFooter(props: SelectionFooterProps): JSX.Element {
+  const { t } = useI18n();
   return (
     <Show when={props.count > 0}>
-      <div class="flex items-center gap-4 border-t border-line bg-page px-4 py-2.5 text-sm">
-        <span class="font-medium text-[#3a3d44]">{props.count} selected</span>
+      <div class="flex items-center gap-4 border-t border-line bg-bg px-4 py-2.5 text-sm">
+        <span class="font-medium text-fg">{t("message.selected-count", { count: props.count })}</span>
         <div class="flex items-center gap-2">
           <For each={props.actions}>
             {(action) => (
@@ -36,7 +38,7 @@ export function SelectionFooter(props: SelectionFooterProps): JSX.Element {
                 onClick={() => action.onClick()}
                 class="flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-40"
                 classList={{
-                  "border-red-500 text-red-600 hover:bg-red-50": action.tone === "danger",
+                  "border-danger text-danger hover:bg-danger/10": action.tone === "danger",
                   "border-brand text-brand hover:bg-brand-light": action.tone !== "danger",
                 }}
               >
@@ -49,9 +51,9 @@ export function SelectionFooter(props: SelectionFooterProps): JSX.Element {
         <button
           type="button"
           onClick={() => props.onClear()}
-          class="ms-auto text-gray-menu hover:text-[#3a3d44] hover:underline"
+          class="ms-auto text-muted hover:text-fg hover:underline"
         >
-          Clear selection
+          {t("action.clear-selection")}
         </button>
       </div>
     </Show>

@@ -1,9 +1,9 @@
 import { type Component, createEffect, createSignal, on, Show } from "solid-js";
 import { Button } from "../../../../components/ui/Button";
 import { CopyIcon, DeleteIcon } from "../../../../components/icons";
+import { useFormat, useI18n } from "../../../../intl";
 import type { StocktakeDetail, UpdateStocktakePatch } from "../api";
 import { canDeleteStocktake } from "../api";
-import { formatDate } from "../columns";
 
 interface SidePanelProps {
   stocktake: StocktakeDetail;
@@ -15,6 +15,8 @@ interface SidePanelProps {
 
 /** Right-hand editable panel: entered-by/created (read-only) + counted/verified/comment. */
 export const SidePanel: Component<SidePanelProps> = (props) => {
+  const { t } = useI18n();
+  const fmt = useFormat();
   const [countedBy, setCountedBy] = createSignal(props.stocktake.countedBy ?? "");
   const [verifiedBy, setVerifiedBy] = createSignal(props.stocktake.verifiedBy ?? "");
   const [comment, setComment] = createSignal(props.stocktake.comment ?? "");
@@ -33,21 +35,21 @@ export const SidePanel: Component<SidePanelProps> = (props) => {
   );
 
   const inputClass =
-    "rounded-lg border border-line bg-page px-3 py-2 text-sm disabled:bg-row-hover disabled:text-gray-muted";
+    "rounded-lg border border-line bg-bg px-3 py-2 text-sm disabled:bg-row-hover disabled:text-muted";
 
   return (
-    <aside class="hidden w-72 shrink-0 flex-col gap-4 border-s border-line bg-page p-4 lg:flex">
+    <aside class="hidden w-72 shrink-0 flex-col gap-4 border-s border-line bg-bg p-4 lg:flex">
       <div class="flex flex-col gap-1 text-sm">
-        <span class="text-xs font-medium text-gray-muted">Entered by</span>
+        <span class="text-xs font-medium text-muted">{t("label.entered-by")}</span>
         <span title={props.stocktake.user?.email ?? undefined}>{props.stocktake.user?.username ?? "—"}</span>
       </div>
       <div class="flex flex-col gap-1 text-sm">
-        <span class="text-xs font-medium text-gray-muted">Created</span>
-        <span>{formatDate(props.stocktake.createdDatetime)}</span>
+        <span class="text-xs font-medium text-muted">{t("label.created")}</span>
+        <span>{fmt().formatDate(props.stocktake.createdDatetime)}</span>
       </div>
 
       <label class="flex flex-col gap-1 text-sm">
-        <span class="text-xs font-medium text-gray-muted">Counted by</span>
+        <span class="text-xs font-medium text-muted">{t("label.counted-by")}</span>
         <input
           class={inputClass}
           value={countedBy()}
@@ -58,7 +60,7 @@ export const SidePanel: Component<SidePanelProps> = (props) => {
       </label>
 
       <label class="flex flex-col gap-1 text-sm">
-        <span class="text-xs font-medium text-gray-muted">Verified by</span>
+        <span class="text-xs font-medium text-muted">{t("label.verified-by")}</span>
         <input
           class={inputClass}
           value={verifiedBy()}
@@ -69,7 +71,7 @@ export const SidePanel: Component<SidePanelProps> = (props) => {
       </label>
 
       <label class="flex flex-col gap-1 text-sm">
-        <span class="text-xs font-medium text-gray-muted">Comment</span>
+        <span class="text-xs font-medium text-muted">{t("label.comment")}</span>
         <textarea
           rows={4}
           class={inputClass}
@@ -83,11 +85,11 @@ export const SidePanel: Component<SidePanelProps> = (props) => {
       <div class="mt-auto flex flex-col gap-2">
         <Show when={canDeleteStocktake(props.stocktake)}>
           <Button variant="danger" onClick={() => props.onDelete()}>
-            <DeleteIcon class="h-4 w-4" /> Delete
+            <DeleteIcon class="h-4 w-4" /> {t("action.delete")}
           </Button>
         </Show>
         <Button variant="secondary" onClick={() => props.onCopy()}>
-          <CopyIcon class="h-4 w-4" /> Copy to clipboard
+          <CopyIcon class="h-4 w-4" /> {t("action.copy-to-clipboard")}
         </Button>
       </div>
     </aside>

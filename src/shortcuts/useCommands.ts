@@ -1,5 +1,6 @@
 import { useNavigate } from "@solidjs/router";
 import { createMemo } from "solid-js";
+import { useI18n } from "../intl";
 import { getRouteTitle } from "../routes/routeMeta";
 import { ROUTES } from "../routes/routes";
 
@@ -18,16 +19,22 @@ export interface Command {
  */
 export const useCommands = (): (() => Command[]) => {
   const navigate = useNavigate();
+  const { t } = useI18n();
 
+  // Titles are translated inside the memo so it tracks locale: switching language
+  // re-derives every command title (getRouteTitle returns an i18n key, not text).
   return createMemo<Command[]>(() =>
     Object.entries(ROUTES)
       .filter(([, path]) => !path.includes(":"))
-      .map(([id, path]) => ({
-        id,
-        title: getRouteTitle(path) || path,
-        path,
-        keywords: path,
-        run: () => navigate(path),
-      })),
+      .map(([id, path]) => {
+        const key = getRouteTitle(path);
+        return {
+          id,
+          title: key ? t(key) : path,
+          path,
+          keywords: path,
+          run: () => navigate(path),
+        };
+      }),
   );
 };
