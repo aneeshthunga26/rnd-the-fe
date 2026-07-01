@@ -1,10 +1,10 @@
-import { type Accessor } from "solid-js";
+import { type Accessor, createMemo } from "solid-js";
 import type { ColumnDef } from "@tanstack/solid-table";
 import { selectionColumn } from "../../../../components/table/selectionColumn";
 import { usePreferences } from "../../../../components/inputs";
 import { useStocktakeLineError } from "../../../../context/stocktakeLineError";
+import { useFormat, useI18n } from "../../../../intl";
 import type { StocktakeLine } from "../api";
-import { formatDate } from "../columns";
 
 const num = (v: unknown) => (v == null ? "" : String(v));
 
@@ -29,71 +29,76 @@ export const isUncounted = (line: StocktakeLine): boolean => line.countedNumberO
  * Sortable column ids match `StocktakeLineSortFieldInput` keys (server sorts).
  */
 export const useLineColumns = (): Accessor<ColumnDef<StocktakeLine>[]> => {
+  const { t } = useI18n();
+  const fmt = useFormat();
   const prefs = usePreferences();
   const { getError } = useStocktakeLineError();
 
-  // A cell that highlights (red border) when the line has a matching error.
+  // A cell that highlights (danger border) when the line has a matching error.
   const errorCell =
     (match?: string) =>
     (ctx: { row: { original: StocktakeLine }; getValue: () => unknown }) => {
       const err = getError({ id: ctx.row.original.id });
       const highlight = err && (match ? err.__typename === match : true);
       return (
-        <span classList={{ "rounded border border-red-500 px-1": !!highlight }}>
+        <span classList={{ "rounded border border-danger px-1": !!highlight }}>
           {num(ctx.getValue())}
         </span>
       );
     };
 
-  return () => {
+  // Memoised so the array reference stays stable across unrelated reactive reads
+  // (the lines table is virtualized — churning column identity would defeat that);
+  // recomputes only when prefs (gated columns) or locale (header t()) change.
+  return createMemo(() => {
     const cols: ColumnDef<StocktakeLine>[] = [
       selectionColumn<StocktakeLine>(),
       {
         id: "itemCode",
         accessorFn: (r) => r.item.code,
-        header: "Code",
+        header: t("label.code"),
         size: 120,
         cell: errorCell(),
       },
-      { id: "itemName", accessorKey: "itemName", header: "Name", size: 320 },
-      { id: "batch", accessorKey: "batch", header: "Batch", size: 110 },
+      { id: "itemName", accessorKey: "itemName", header: t("label.name"), size: 320 },
+      { id: "batch", accessorKey: "batch", header: t("label.batch"), size: 110 },
       {
         id: "expiryDate",
         accessorFn: (r) => r.expiryDate,
-        header: "Expiry",
+        header: t("label.expiry"),
         size: 110,
-        cell: (ctx) => formatDate(ctx.getValue<string | null>()),
+        cell: (ctx) => fmt().formatDate(ctx.getValue<string | null>()),
       },
       {
         id: "manufactureDate",
         accessorFn: (r) => r.manufactureDate,
-        header: "Manufactured",
+        header: t("label.manufactured"),
         size: 120,
         enableSorting: false,
-        cell: (ctx) => formatDate(ctx.getValue<string | null>()),
+        cell: (ctx) => fmt().formatDate(ctx.getValue<string | null>()),
       },
       {
         id: "locationCode",
         accessorFn: (r) => r.location?.code ?? "",
-        header: "Location",
+        header: t("label.location"),
         size: 100,
         enableSorting: false,
       },
       {
         id: "itemUnit",
         accessorFn: (r) => r.item.unitName ?? "",
-        header: "Unit",
+        header: t("label.unit"),
         size: 90,
         enableSorting: false,
       },
-      { id: "packSize", accessorKey: "packSize", header: "Pack size", size: 90, enableSorting: false },
+      { id: "packSize", accessorKey: "packSize", header: t("label.pack-size"), size: 90, enableSorting: false },
     ];
 
     if (prefs().manageVaccinesInDoses) {
       cols.push({
         id: "itemDoses",
         accessorFn: (r) => (r.item.isVaccine ? r.item.doses : undefined),
-        header: "Doses per unit",
+        header: t("label.doses-per-unit"),
         size: 110,
         enableSorting: false,
         cell: (ctx) => num(ctx.getValue()),
@@ -104,14 +109,14 @@ export const useLineColumns = (): Accessor<ColumnDef<StocktakeLine>[]> => {
       {
         id: "snapshotNumberOfPacks",
         accessorKey: "snapshotNumberOfPacks",
-        header: "Snapshot",
+        header: t("label.snapshot"),
         size: 100,
         cell: errorCell("SnapshotCountCurrentCountMismatchLine"),
       },
       {
         id: "countedNumberOfPacks",
         accessorKey: "countedNumberOfPacks",
-        header: "Counted",
+        header: t("label.counted"),
         size: 100,
         cell: errorCell("StockLineReducedBelowZero"),
       },
@@ -121,7 +126,7 @@ export const useLineColumns = (): Accessor<ColumnDef<StocktakeLine>[]> => {
       cols.push({
         id: "dosesCounted",
         accessorFn: (r) => dosesCounted(r),
-        header: "Doses counted",
+        header: t("label.doses-counted"),
         size: 110,
         enableSorting: false,
         cell: (ctx) => num(ctx.getValue()),
@@ -132,7 +137,7 @@ export const useLineColumns = (): Accessor<ColumnDef<StocktakeLine>[]> => {
       {
         id: "difference",
         accessorFn: (r) => difference(r),
-        header: "Difference",
+        header: t("label.difference"),
         size: 100,
         enableSorting: false,
         cell: (ctx) => num(ctx.getValue()),
@@ -140,7 +145,7 @@ export const useLineColumns = (): Accessor<ColumnDef<StocktakeLine>[]> => {
       {
         id: "reasonOption",
         accessorFn: (r) => r.reasonOption?.reason ?? "",
-        header: "Reason",
+        header: t("label.reason"),
         size: 140,
       },
     );
@@ -149,7 +154,7 @@ export const useLineColumns = (): Accessor<ColumnDef<StocktakeLine>[]> => {
       cols.push({
         id: "donor",
         accessorFn: (r) => r.donorName ?? "",
-        header: "Donor",
+        header: t("label.donor"),
         size: 140,
         enableSorting: false,
       });
@@ -159,13 +164,13 @@ export const useLineColumns = (): Accessor<ColumnDef<StocktakeLine>[]> => {
       {
         id: "manufacturer",
         accessorFn: (r) => r.manufacturer?.name ?? "",
-        header: "Manufacturer",
+        header: t("label.manufacturer"),
         size: 140,
         enableSorting: false,
       },
-      { id: "comment", accessorKey: "comment", header: "Comment", size: 160, enableSorting: false },
+      { id: "comment", accessorKey: "comment", header: t("label.comment"), size: 160, enableSorting: false },
     );
 
     return cols;
-  };
+  });
 };

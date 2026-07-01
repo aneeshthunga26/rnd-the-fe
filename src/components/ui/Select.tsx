@@ -41,7 +41,7 @@ export function Select(props: SelectProps): JSX.Element {
       value={selected()}
       onChange={(o) => props.onChange(o?.value ?? "")}
       disabled={props.disabled}
-      placeholder={<span class="text-gray-muted">{props.placeholder}</span>}
+      placeholder={<span class="text-muted">{props.placeholder}</span>}
       optionValue="value"
       optionTextValue="label"
       optionDisabled="disabled"
@@ -57,7 +57,7 @@ export function Select(props: SelectProps): JSX.Element {
     >
       <KSelect.Trigger
         aria-label={props["aria-label"]}
-        class={`flex items-center justify-between gap-2 rounded-lg border border-line bg-page px-3 py-2 text-sm text-gray-menu hover:bg-row-hover disabled:cursor-not-allowed disabled:opacity-40 ${
+        class={`flex items-center justify-between gap-2 rounded-lg border border-line bg-bg px-3 py-2 text-sm text-fg hover:bg-row-hover disabled:cursor-not-allowed disabled:opacity-40 ${
           props.class ?? ""
         }`}
       >
@@ -69,11 +69,11 @@ export function Select(props: SelectProps): JSX.Element {
         </KSelect.Icon>
       </KSelect.Trigger>
       <KSelect.Portal>
-        <KSelect.Content class="z-[60] overflow-hidden rounded-lg border border-line bg-page p-1 shadow-xl">
+        <KSelect.Content class="z-[60] overflow-hidden rounded-lg border border-line bg-bg p-1 shadow-xl">
           <Show when={props.clearable && props.value}>
             <button
               type="button"
-              class="flex w-full items-center rounded px-3 py-2 text-left text-sm text-gray-muted hover:bg-row-hover"
+              class="flex w-full items-center rounded px-3 py-2 text-start text-sm text-muted hover:bg-row-hover"
               onClick={() => {
                 props.onChange("");
                 setOpen(false);

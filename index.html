@@ -4,6 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>rnd-the-fe — Stocktakes</title>
+    <!-- No-FOUC: apply the persisted theme before first paint. Storage keys
+         MUST match src/theme/config.ts (THEME_STORAGE_KEY / CUSTOM_THEMES_STORAGE_KEY). -->
+    <script>
+      (function () {
+        try {
+          var id = localStorage.getItem("rnd-the-fe/theme") || "system";
+          var custom = JSON.parse(localStorage.getItem("rnd-the-fe/custom-themes") || "[]");
+          var c = custom.find(function (t) {
+            return t.id === id;
+          });
+          var root = document.documentElement;
+          if (c) {
+            root.dataset.theme = "custom";
+            for (var k in c.vars) root.style.setProperty(k, c.vars[k]);
+          } else {
+            root.dataset.theme = id;
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="app"></div>

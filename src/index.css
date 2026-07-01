@@ -1,7 +1,16 @@
 @import "tailwindcss";
 
-/* Design tokens (approximate open-mSupply look). Tailwind v4 reads these as
-   utility values, e.g. `bg-brand`, `text-gray-menu`, `border-line`. */
+/* Design tokens (approximate open-mSupply look).
+ *
+ * Colors are SEMANTIC (`bg-bg`, `bg-surface`, `text-fg`, `border-line`,
+ * `bg-brand`, `text-on-brand`, …). A theme = a set of values for these vars;
+ * switching a theme just changes the variable values, so nothing regenerates.
+ *
+ * IMPORTANT: this is a PLAIN `@theme` block (NOT `@theme inline`) so the color
+ * tokens stay overridable CSS variables — utilities emit
+ * `background-color: var(--color-bg)`, so overriding the variable in a
+ * `[data-theme]` block or via inline `style.setProperty` cascades to every
+ * utility automatically. Default values below = the light theme. */
 @theme {
   /* Global breakpoints — kept in sync with src/lib/breakpoints.ts (the JS source
      of truth for media-query logic). These drive Tailwind's sm:/md:/lg:/xl: variants. */
@@ -11,17 +20,46 @@
   --breakpoint-xl: 80rem; /* 1280px */
   --breakpoint-2xl: 96rem; /* 1536px */
 
+  /* Semantic color tokens (light) */
+  --color-bg: #ffffff;
+  --color-surface: #f4f5f7;
+  --color-overlay: #00000030;
+  --color-fg: #1f2126;
+  --color-muted: #8f9299;
+  --color-line: #e4e6eb;
+  --color-row-hover: #f7f8fa;
   --color-brand: #e85c2e;
   --color-brand-hover: #d24e23;
   --color-brand-light: #fdeee8;
+  --color-on-brand: #ffffff;
+  --color-danger: #d64545;
+  --color-success: #2e9e5b;
+}
 
-  --color-line: #e4e6eb;
-  --color-page: #ffffff;
-  --color-sidebar: #f4f5f7;
+/* Dark theme — overrides only the tokens that differ from light. */
+[data-theme="dark"] {
+  --color-bg: #16181d;
+  --color-surface: #1f2229;
+  --color-overlay: #00000066;
+  --color-fg: #e7e9ee;
+  --color-muted: #8b8f99;
+  --color-line: #2c2f37;
+  --color-row-hover: #232630;
+  --color-brand-light: #3a2016;
+}
 
-  --color-gray-menu: #61646b;
-  --color-gray-muted: #8f9299;
-  --color-row-hover: #f7f8fa;
+/* "system" follows the OS: apply the dark values when the OS prefers dark. */
+@media (prefers-color-scheme: dark) {
+  [data-theme="system"] {
+    --color-bg: #16181d;
+    --color-surface: #1f2229;
+    --color-overlay: #00000066;
+    --color-fg: #e7e9ee;
+    --color-muted: #8b8f99;
+    --color-line: #2c2f37;
+    --color-row-hover: #232630;
+    --color-brand-light: #3a2016;
+  }
 }
 
 html,
@@ -34,7 +72,7 @@ body {
   margin: 0;
   font-family:
     "Inter", system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  color: #1f2126;
+  color: var(--color-fg);
 }
 
 /* Full-screen mobile drawer sliding in from the top. */

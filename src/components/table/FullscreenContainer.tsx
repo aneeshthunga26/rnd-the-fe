@@ -9,7 +9,7 @@ import { type JSX, Show } from "solid-js";
 export function FullscreenContainer(props: { isFullscreen: boolean; children: JSX.Element }): JSX.Element {
   return (
     <Show when={props.isFullscreen} fallback={<>{props.children}</>}>
-      <div class="fixed inset-0 z-50 flex flex-col overflow-hidden bg-page p-4">{props.children}</div>
+      <div class="fixed inset-0 z-50 flex flex-col overflow-hidden bg-bg p-4">{props.children}</div>
     </Show>
   );
 }

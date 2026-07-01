@@ -1,3 +1,3 @@
 import { Placeholder } from "./_Placeholder";
 
-export default () => <Placeholder title="Help" />;
+export default () => <Placeholder titleKey="app.help" />;

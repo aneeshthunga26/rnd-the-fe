@@ -33,6 +33,7 @@ import {
 import { useIsMobile } from "../../../lib/useMediaQuery";
 import { useUrlQueryParams } from "../../../lib/useUrlQueryParams";
 import { usePersistedTableState } from "../../../lib/persistTableState";
+import { useFormat, useI18n, type Formatters } from "../../../intl";
 import {
   canDeleteStocktake,
   type StocktakeFilter,
@@ -42,7 +43,7 @@ import {
   useStocktakeDelete,
   useStocktakes,
 } from "./api";
-import { columns, formatDate } from "./columns";
+import { useStocktakeColumns } from "./columns";
 
 const SORT_KEYS = new Set<StocktakeSortKey>([
   "stocktakeNumber",
@@ -55,22 +56,25 @@ const SORT_KEYS = new Set<StocktakeSortKey>([
 ]);
 
 // Mobile card for a stocktake row.
-const renderStocktakeCard = (row: StocktakeRow) => (
+const renderStocktakeCard = (row: StocktakeRow, t: ReturnType<typeof useI18n>["t"], fmt: Formatters) => (
   <div>
     <div class="flex items-center justify-between">
       <span class="font-semibold">#{row.stocktakeNumber}</span>
       <span class="rounded-full bg-brand-light px-2 py-0.5 text-xs font-medium text-brand">
-        {row.isLocked ? "On Hold" : row.status}
+        {row.isLocked ? t("status.on-hold") : row.status}
       </span>
     </div>
     <div class="mt-1 text-sm">{row.description}</div>
-    <div class="mt-1 text-xs text-gray-muted">{formatDate(row.createdDatetime)}</div>
+    <div class="mt-1 text-xs text-muted">{fmt.formatDate(row.createdDatetime)}</div>
   </div>
 );
 
 export const ListView: Component = () => {
+  const { t } = useI18n();
+  const fmt = useFormat();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const columns = useStocktakeColumns();
   const url = useUrlQueryParams({ initialSort: { key: "createdDatetime", dir: "desc" }, pageSize: 20 });
 
   // Map the URL's raw filter record → the server's typed StocktakeFilter.
@@ -138,7 +142,9 @@ export const ListView: Component = () => {
     get data() {
       return query.data?.rows ?? [];
     },
-    columns,
+    get columns() {
+      return columns();
+    },
     state: {
       get rowSelection() {
         return rowSelection();
@@ -193,13 +199,13 @@ export const ListView: Component = () => {
           onClick={() => setCreateOpen(true)}
           class="flex items-center gap-2 rounded-full border border-brand px-4 py-2 text-sm font-medium text-brand hover:bg-brand-light"
         >
-          <PlusCircleIcon class="w-5 h-5" /> New stocktake
+          <PlusCircleIcon class="w-5 h-5" /> {t("action.new-stocktake")}
         </button>
         <div class="flex items-stretch overflow-hidden rounded-full border border-brand text-brand">
           <button type="button" class="flex items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-brand-light">
-            <UploadIcon class="w-5 h-5" /> Export CSV
+            <UploadIcon class="w-5 h-5" /> {t("action.export-csv")}
           </button>
-          <button type="button" class="border-l border-brand px-2 hover:bg-brand-light">
+          <button type="button" class="border-s border-brand px-2 hover:bg-brand-light">
             <ChevronDownIcon class="w-4 h-4" />
           </button>
         </div>
@@ -212,17 +218,17 @@ export const ListView: Component = () => {
               {/* SLOT:actions-new (mobile) — 06 */}
               <button
                 type="button"
-                title="New stocktake"
+                title={t("action.new-stocktake")}
                 onClick={() => setCreateOpen(true)}
                 class="flex h-9 w-9 items-center justify-center rounded-full border border-brand text-brand hover:bg-brand-light"
               >
                 <PlusCircleIcon class="w-5 h-5" />
               </button>
               <div class="flex items-stretch overflow-hidden rounded-full border border-brand text-brand">
-                <button type="button" title="Export CSV" class="flex items-center px-2.5 hover:bg-brand-light">
+                <button type="button" title={t("action.export-csv")} class="flex items-center px-2.5 hover:bg-brand-light">
                   <UploadIcon class="w-5 h-5" />
                 </button>
-                <button type="button" class="border-l border-brand px-1.5 hover:bg-brand-light">
+                <button type="button" class="border-s border-brand px-1.5 hover:bg-brand-light">
                   <ChevronDownIcon class="w-4 h-4" />
                 </button>
               </div>
@@ -230,15 +236,15 @@ export const ListView: Component = () => {
           }
         >
           <Select
-            aria-label="Filter by status"
-            placeholder="Status"
+            aria-label={t("label.filter-by-status")}
+            placeholder={t("label.status")}
             clearable
             class="min-w-[9rem]"
             value={url.getFilter("status") ?? ""}
             onChange={(v) => url.setFilter("status", v)}
             options={[
-              { value: "NEW", label: "New" },
-              { value: "FINALISED", label: "Finalised" },
+              { value: "NEW", label: t("status.new") },
+              { value: "FINALISED", label: t("status.finalised") },
             ]}
           />
         </FilterBar>
@@ -252,7 +258,7 @@ export const ListView: Component = () => {
               /* SLOT:toolbar-fullscreen — 04 */
               <button
                 class={toolbarBtnClass}
-                title={fs.isFullscreen() ? "Exit fullscreen" : "Fullscreen"}
+                title={fs.isFullscreen() ? t("action.exit-fullscreen") : t("action.fullscreen")}
                 type="button"
                 onClick={fs.toggle}
               >
@@ -267,16 +273,20 @@ export const ListView: Component = () => {
 
           <Show
             when={!query.isError}
-            fallback={<div class="p-6 text-red-600">Failed to load stocktakes: {String(query.error)}</div>}
+            fallback={
+              <div class="p-6 text-danger">
+                {t("message.load-stocktakes-failed", { error: String(query.error) })}
+              </div>
+            }
           >
             <Show
               when={query.data || !query.isPending}
-              fallback={<div class="p-6 text-gray-muted">Loading stocktakes…</div>}
+              fallback={<div class="p-6 text-muted">{t("message.loading-stocktakes")}</div>}
             >
               <DataTable
                 table={table}
                 density={density()}
-                renderCard={renderStocktakeCard}
+                renderCard={(row) => renderStocktakeCard(row, t, fmt())}
                 onRowClick={(row) => navigate(`/inventory/stocktakes/${row.id}`)}
               />
               <TablePagination
@@ -297,11 +307,11 @@ export const ListView: Component = () => {
           onClear={() => table.resetRowSelection()}
           actions={[
             {
-              label: "Delete",
+              label: t("action.delete"),
               tone: "danger",
               icon: <DeleteIcon class="h-4 w-4" />,
               disabled: undeletable(),
-              title: undeletable() ? "Cannot delete finalised or on-hold stocktakes" : undefined,
+              title: undeletable() ? t("message.cannot-delete-selected") : undefined,
               onClick: () => setConfirmOpen(true),
             },
           ]}
@@ -311,9 +321,9 @@ export const ListView: Component = () => {
       <ConfirmModal
         open={confirmOpen()}
         tone="danger"
-        title="Delete stocktakes"
-        message={`Are you sure? This will delete ${selectedRows().length} stocktake(s).`}
-        confirmLabel="Delete"
+        title={t("message.delete-stocktakes-title")}
+        message={t("message.confirm-delete-stocktakes", { count: selectedRows().length })}
+        confirmLabel={t("action.delete")}
         onConfirm={doDelete}
         onCancel={() => setConfirmOpen(false)}
       />

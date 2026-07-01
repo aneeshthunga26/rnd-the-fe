@@ -7,10 +7,10 @@ interface ButtonProps extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANTS: Record<Variant, string> = {
-  primary: "bg-brand text-white hover:bg-brand/90 border border-brand",
-  secondary: "border border-line text-gray-menu hover:bg-row-hover",
-  danger: "bg-red-600 text-white hover:bg-red-700 border border-red-600",
-  ghost: "text-gray-menu hover:bg-row-hover",
+  primary: "bg-brand text-on-brand hover:bg-brand-hover border border-brand",
+  secondary: "border border-line text-fg hover:bg-row-hover",
+  danger: "bg-danger text-on-brand hover:bg-danger/90 border border-danger",
+  ghost: "text-fg hover:bg-row-hover",
 };
 
 /** Shared button matching the app's pill style, with a few tones. */

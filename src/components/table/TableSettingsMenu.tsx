@@ -1,6 +1,7 @@
 import { type Component } from "solid-js";
 import { Menu, MenuItem, MenuSeparator } from "../ui/Menu";
 import { SettingsIcon } from "../icons";
+import { useI18n } from "../../intl";
 import { toolbarBtnClass } from "./TableToolbar";
 import type { Density } from "./DataTable";
 import type { PersistedTableState } from "../../lib/persistTableState";
@@ -11,10 +12,10 @@ const NEXT_DENSITY: Record<Density, Density> = {
   spacious: "compact",
 };
 
-const DENSITY_LABEL: Record<Density, string> = {
-  compact: "Compact",
-  comfortable: "Comfortable",
-  spacious: "Spacious",
+const DENSITY_KEY: Record<Density, "status.compact" | "status.comfortable" | "status.spacious"> = {
+  compact: "status.compact",
+  comfortable: "status.comfortable",
+  spacious: "status.spacious",
 };
 
 interface Props {
@@ -24,25 +25,28 @@ interface Props {
 }
 
 /** Gear-button menu: reset order/sizes/pinned, show all, toggle density, reset all. */
-export const TableSettingsMenu: Component<Props> = (props) => (
-  <Menu
-    trigger={<SettingsIcon />}
-    triggerClass={toolbarBtnClass}
-    triggerTitle="Table settings"
-    title="Table settings"
-    width="15rem"
-  >
-    <MenuItem onClick={props.persisted.resetOrder}>Reset column order</MenuItem>
-    <MenuItem onClick={props.persisted.showAll}>Show all columns</MenuItem>
-    <MenuItem onClick={props.persisted.resetSizes}>Reset column sizes</MenuItem>
-    <MenuItem onClick={props.persisted.resetPinned}>Reset pinned columns</MenuItem>
-    <MenuItem onClick={() => props.setDensity(NEXT_DENSITY[props.density()])}>
-      <span>Density</span>
-      <span class="ms-auto text-xs text-gray-muted">{DENSITY_LABEL[props.density()]}</span>
-    </MenuItem>
-    <MenuSeparator />
-    <MenuItem tone="danger" onClick={props.persisted.reset}>
-      Reset table to defaults
-    </MenuItem>
-  </Menu>
-);
+export const TableSettingsMenu: Component<Props> = (props) => {
+  const { t } = useI18n();
+  return (
+    <Menu
+      trigger={<SettingsIcon />}
+      triggerClass={toolbarBtnClass}
+      triggerTitle={t("label.table-settings")}
+      title={t("label.table-settings")}
+      width="15rem"
+    >
+      <MenuItem onClick={props.persisted.resetOrder}>{t("action.reset-column-order")}</MenuItem>
+      <MenuItem onClick={props.persisted.showAll}>{t("action.show-all-columns")}</MenuItem>
+      <MenuItem onClick={props.persisted.resetSizes}>{t("action.reset-column-sizes")}</MenuItem>
+      <MenuItem onClick={props.persisted.resetPinned}>{t("action.reset-pinned-columns")}</MenuItem>
+      <MenuItem onClick={() => props.setDensity(NEXT_DENSITY[props.density()])}>
+        <span>{t("label.density")}</span>
+        <span class="ms-auto text-xs text-muted">{t(DENSITY_KEY[props.density()])}</span>
+      </MenuItem>
+      <MenuSeparator />
+      <MenuItem tone="danger" onClick={props.persisted.reset}>
+        {t("action.reset-table-defaults")}
+      </MenuItem>
+    </Menu>
+  );
+};

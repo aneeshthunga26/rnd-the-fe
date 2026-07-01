@@ -41,9 +41,10 @@ function pinnedStyle<TData>(
     position: "sticky",
     "z-index": 1,
     "background-color": "inherit",
+    // Logical insets so pinning mirrors under RTL (identical to left/right in LTR).
     ...(pinned === "left"
-      ? { left: `${column.getStart("left")}px` }
-      : { right: `${column.getAfter("right")}px` }),
+      ? { "inset-inline-start": `${column.getStart("left")}px` }
+      : { "inset-inline-end": `${column.getAfter("right")}px` }),
   };
 }
 
@@ -104,8 +105,8 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
         const cellDef = cell.column.columnDef.cell;
         return (
           <div class="flex justify-between gap-4 py-0.5 text-sm">
-            <span class="text-gray-muted">{header}</span>
-            <span class="truncate text-right">
+            <span class="text-muted">{header}</span>
+            <span class="truncate text-end">
               {cellDef ? flexRender(cellDef, cell.getContext()) : String(cell.getValue() ?? "")}
             </span>
           </div>
@@ -115,7 +116,7 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
   );
 
   return (
-    <div class="flex flex-col overflow-hidden rounded-lg border border-line bg-page">
+    <div class="flex flex-col overflow-hidden rounded-lg border border-line bg-bg">
       <Show
         when={!isMobile()}
         fallback={
@@ -138,7 +139,7 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
           <div style={{ "min-width": `${totalWidth()}px` }}>
             {/* Sticky header */}
             <div
-              class="sticky top-0 z-20 flex border-b border-line bg-page text-xs font-medium uppercase tracking-wide text-gray-muted"
+              class="sticky top-0 z-20 flex border-b border-line bg-bg text-xs font-medium uppercase tracking-wide text-muted"
               style={{ height: `${rowHeight()}px` }}
             >
               <For each={headers()}>
@@ -147,7 +148,7 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
                   return (
                     <div
                       style={{ width: `${header.getSize()}px`, ...pinnedStyle(header.column) }}
-                      class="group relative flex items-center gap-1 bg-page px-4"
+                      class="group relative flex items-center gap-1 bg-bg px-4"
                       classList={{ "cursor-pointer select-none": canSort() }}
                       onClick={canSort() ? header.column.getToggleSortingHandler() : undefined}
                     >
@@ -190,7 +191,7 @@ export function DataTable<TData>(props: DataTableProps<TData>): JSX.Element {
                         height: `${virtualRow.size}px`,
                         transform: `translateY(${virtualRow.start}px)`,
                       }}
-                      class={`flex cursor-pointer items-center border-b border-line bg-page text-sm text-[#3a3d44] hover:bg-row-hover ${
+                      class={`flex cursor-pointer items-center border-b border-line bg-bg text-sm text-fg hover:bg-row-hover ${
                         props.rowClass?.(row().original) ?? ""
                       }`}
                       classList={{ "bg-brand-light/40 hover:bg-brand-light/50": row().getIsSelected() }}
