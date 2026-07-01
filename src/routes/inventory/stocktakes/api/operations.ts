@@ -23,22 +23,22 @@ export type StocktakeRow = ResultOf<typeof StocktakeRowFragment>;
 // to drive server pagination.
 export const StocktakesDocument = graphql(
   `
-  query stocktakes(
-    $storeId: String!
-    $filter: StocktakeFilterInput
-    $page: PaginationInput
-    $sort: [StocktakeSortInput!]
-  ) {
-    stocktakes(storeId: $storeId, filter: $filter, page: $page, sort: $sort) {
-      ... on StocktakeConnector {
-        totalCount
-        nodes {
-          ...StocktakeRow
+    query stocktakes(
+      $storeId: String!
+      $filter: StocktakeFilterInput
+      $page: PaginationInput
+      $sort: [StocktakeSortInput!]
+    ) {
+      stocktakes(storeId: $storeId, filter: $filter, page: $page, sort: $sort) {
+        ... on StocktakeConnector {
+          totalCount
+          nodes {
+            ...StocktakeRow
+          }
         }
       }
     }
-  }
-`,
+  `,
   [StocktakeRowFragment],
 );
 
@@ -111,15 +111,15 @@ export type StocktakeDetail = ResultOf<typeof StocktakeDetailFragment>;
 
 export const StocktakeDocument = graphql(
   `
-  query stocktake($stocktakeId: String!, $storeId: String!) {
-    stocktake(id: $stocktakeId, storeId: $storeId) {
-      __typename
-      ... on StocktakeNode {
-        ...StocktakeDetail
+    query stocktake($stocktakeId: String!, $storeId: String!) {
+      stocktake(id: $stocktakeId, storeId: $storeId) {
+        __typename
+        ... on StocktakeNode {
+          ...StocktakeDetail
+        }
       }
     }
-  }
-`,
+  `,
   [StocktakeDetailFragment],
 );
 
@@ -209,29 +209,29 @@ export type StocktakeLine = ResultOf<typeof StocktakeLineFragment>;
 
 export const StocktakeLinesDocument = graphql(
   `
-  query stocktakeLines(
-    $stocktakeId: String!
-    $storeId: String!
-    $page: PaginationInput
-    $sort: [StocktakeLineSortInput!]
-    $filter: StocktakeLineFilterInput
-  ) {
-    stocktakeLines(
-      stocktakeId: $stocktakeId
-      storeId: $storeId
-      page: $page
-      sort: $sort
-      filter: $filter
+    query stocktakeLines(
+      $stocktakeId: String!
+      $storeId: String!
+      $page: PaginationInput
+      $sort: [StocktakeLineSortInput!]
+      $filter: StocktakeLineFilterInput
     ) {
-      ... on StocktakeLineConnector {
-        totalCount
-        nodes {
-          ...StocktakeLine
+      stocktakeLines(
+        stocktakeId: $stocktakeId
+        storeId: $storeId
+        page: $page
+        sort: $sort
+        filter: $filter
+      ) {
+        ... on StocktakeLineConnector {
+          totalCount
+          nodes {
+            ...StocktakeLine
+          }
         }
       }
     }
-  }
-`,
+  `,
   [StocktakeLineFragment],
 );
 
@@ -418,17 +418,17 @@ export type StockLineForStocktake = ResultOf<typeof StockLineForStocktakeFragmen
 
 export const StockLinesByItemDocument = graphql(
   `
-  query stockLinesByItem($storeId: String!, $itemId: String!) {
-    stockLines(storeId: $storeId, filter: { itemId: { equalTo: $itemId }, isActive: true }) {
-      ... on StockLineConnector {
-        totalCount
-        nodes {
-          ...StockLineForStocktake
+    query stockLinesByItem($storeId: String!, $itemId: String!) {
+      stockLines(storeId: $storeId, filter: { itemId: { equalTo: $itemId }, isActive: true }) {
+        ... on StockLineConnector {
+          totalCount
+          nodes {
+            ...StockLineForStocktake
+          }
         }
       }
     }
-  }
-`,
+  `,
   [StockLineForStocktakeFragment],
 );
 

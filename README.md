@@ -1,6 +1,23 @@
 # rnd-the-fe
 
 
+### Development
+
+Scripts:
+
+- `pnpm dev` / `pnpm build` / `pnpm preview` — Vite.
+- `pnpm typecheck` — regenerates the gql.tada env, then `tsc --noEmit`.
+- `pnpm lint` / `pnpm lint:fix` — ESLint (flat config): `typescript-eslint` +
+  `eslint-plugin-solid` (catches Solid reactivity foot-guns like destructured props) +
+  `eslint-config-prettier`. The generated `src/graphql/graphql-env.d.ts` is ignored.
+- `pnpm format` / `pnpm format:check` — Prettier (2-space, 110 print width).
+
+**GraphQL editor tooling (graphqlsp / gql.tada):** inline GraphQL diagnostics + autocomplete
+come from the `gql.tada/ts-plugin` (via `@0no-co/graphqlsp`) declared in `tsconfig.json`. For it
+to load, your **editor must use the workspace TypeScript version** (VS Code: “TypeScript: Select
+TS Version” → *Use Workspace Version*). Run `npx gql.tada doctor` to diagnose setup. After schema
+changes, `pnpm schema:pull` / `pnpm schema:introspect` refreshes `graphql-env.d.ts`.
+
 ### References
 
 [reference doc](https://docs.google.com/document/d/1kkXyCc2Pf1McYCYDE5_ppvOCMEufVD1E2Z3Rlj0ayPk/edit?tab=t.0#heading=h.gokx2jgewyyw)

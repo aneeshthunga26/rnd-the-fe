@@ -163,8 +163,7 @@ export const ar: Dictionary = {
     "finalise-needs-lines": "أضف وعُدّ سطراً واحداً على الأقل قبل الإنهاء",
     "confirm-delete-lines": "حذف {{ count }} سطر محدد؟",
     "confirm-change-location": "هل أنت متأكد من تغيير موقع الأسطر المحددة؟",
-    "restricted-location-conflict":
-      "الأسطر المحددة لديها أنواع مواقع مقيدة متعارضة ولا يمكن نقلها معًا.",
+    "restricted-location-conflict": "الأسطر المحددة لديها أنواع مواقع مقيدة متعارضة ولا يمكن نقلها معًا.",
     "restricted-location-type": "الأسطر المحددة مقيدة بنوع موقع محدد.",
     "confirm-reduce-to-zero": "هل أنت متأكد من رغبتك في تصفير الكمية المعدودة للأسطر المحددة؟",
     "cannot-edit-stocktake": "لا يمكن تعديل هذا الجرد.",

@@ -15,7 +15,7 @@ export const useStocktakeColumns = (): Accessor<ColumnDef<StocktakeRow>[]> => {
   // Memoised so the array reference is stable across unrelated reactive reads
   // (preserving TanStack column memoization + reference-keyed <For> identity);
   // it recomputes only when the locale changes (the header t() calls track it).
-  return createMemo(() => [
+  const columns = createMemo(() => [
     selectionColumn<StocktakeRow>(),
     {
       id: "stocktakeNumber",
@@ -51,4 +51,5 @@ export const useStocktakeColumns = (): Accessor<ColumnDef<StocktakeRow>[]> => {
       enableSorting: false,
     },
   ]);
+  return columns;
 };

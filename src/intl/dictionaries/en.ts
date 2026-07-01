@@ -170,8 +170,7 @@ export const en = {
     "create-filtered-stocktake": "Create a filtered stocktake",
     "create-blank-stocktake": "Create blank stocktake",
     "full-stocktake-hint": "Creating a stocktake for all items in your store.",
-    "filtered-stocktake-hint":
-      "Select filters below to control which items are included in the stocktake.",
+    "filtered-stocktake-hint": "Select filters below to control which items are included in the stocktake.",
     "blank-stocktake-hint": "You can add items manually after creating the stocktake.",
     "items-with-stock": "Items with stock on hand",
     "all-items-out-of-stock": "All items (include out of stock items)",
@@ -193,8 +192,7 @@ export const en = {
     "confirm-reduce-to-zero":
       "Are you sure you want to reduce the counted quantity of the selected lines to zero?",
     "cannot-edit-stocktake": "This stocktake cannot be edited.",
-    "lines-could-not-be-saved":
-      "Some lines could not be saved. Please review and correct the errors below.",
+    "lines-could-not-be-saved": "Some lines could not be saved. Please review and correct the errors below.",
     "add-line-to-begin": "Add a new line to begin.",
     // Theme editor.
     "contrast-ratio": "Text / background contrast: {{ ratio }}:1",

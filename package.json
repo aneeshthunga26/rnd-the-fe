@@ -8,6 +8,10 @@
     "build": "pnpm gql:generate && vite build",
     "preview": "vite preview",
     "gql:generate": "gql.tada generate output",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "schema:pull": "cp ../open-msupply/server/schema.graphql ./schema.graphql && pnpm gql:generate",
     "schema:introspect": "gql.tada generate schema ${VITE_GRAPHQL_URL:-http://localhost:8000/graphql} --output ./schema.graphql && pnpm gql:generate",
     "typecheck": "pnpm gql:generate && tsc --noEmit"
@@ -26,8 +30,13 @@
   "devDependencies": {
     "@0no-co/graphqlsp": "^1.17.3",
     "@tailwindcss/vite": "^4.3.2",
+    "eslint": "^10.6.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-solid": "^0.14.5",
+    "prettier": "^3.9.4",
     "tailwindcss": "^4.3.2",
     "typescript": "^5.6.0",
+    "typescript-eslint": "^8.62.1",
     "vite": "^6.0.0",
     "vite-plugin-solid": "^2.11.0"
   }

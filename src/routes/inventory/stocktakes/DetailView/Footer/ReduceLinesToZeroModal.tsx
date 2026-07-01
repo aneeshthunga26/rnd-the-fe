@@ -21,7 +21,8 @@ export const ReduceLinesToZeroModal: Component<Props> = (props) => {
   const { t } = useI18n();
   const [reason, setReason] = createSignal<ReasonOptionRow | null>(null);
 
-  const allVaccines = () => props.selectedRows.length > 0 && props.selectedRows.every((r) => r.item.isVaccine);
+  const allVaccines = () =>
+    props.selectedRows.length > 0 && props.selectedRows.every((r) => r.item.isVaccine);
   const reasonTypes = () => getReasonOptionTypes({ isInventoryReduction: true, isVaccine: allVaccines() });
   // A reason is required for any inventory reduction (server enforces validity).
   const reasonRequired = () => props.selectedRows.length > 0;

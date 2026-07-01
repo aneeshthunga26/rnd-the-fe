@@ -1,8 +1,4 @@
-import type {
-  DeleteStocktakeLineInput,
-  InsertStocktakeLineInput,
-  UpdateStocktakeLineInput,
-} from "../../api";
+import type { DeleteStocktakeLineInput, InsertStocktakeLineInput, UpdateStocktakeLineInput } from "../../api";
 import type { DraftStocktakeLine } from "./draft";
 
 type NullableUpdate = { value: string | null } | undefined;
@@ -13,7 +9,7 @@ type NullableUpdate = { value: string | null } | undefined;
  */
 function setNullable<K extends string>(
   key: K,
-  entity: (Record<K, string | null | undefined> | null | undefined),
+  entity: Record<K, string | null | undefined> | null | undefined,
 ): NullableUpdate {
   if (entity === null) return { value: null };
   if (entity === undefined || entity[key] === undefined) return undefined;

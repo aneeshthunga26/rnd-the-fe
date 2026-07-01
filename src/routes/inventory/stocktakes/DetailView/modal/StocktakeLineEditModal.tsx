@@ -188,8 +188,7 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
   const reasonCell = (line: DraftStocktakeLine) => {
     const counted = line.countedNumberOfPacks;
     const isReduction = line.snapshotNumberOfPacks > (counted ?? 0);
-    const disabled =
-      props.disabled || typeof counted !== "number" || line.snapshotNumberOfPacks === counted;
+    const disabled = props.disabled || typeof counted !== "number" || line.snapshotNumberOfPacks === counted;
     const err = errors.getError({ id: line.id });
     return (
       <ReasonOptionsSearchInput
@@ -198,7 +197,9 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
         type={getReasonOptionTypes({ isInventoryReduction: isReduction, isVaccine: line.item.isVaccine })}
         fallbackType={isReduction ? "NEGATIVE_INVENTORY_ADJUSTMENT" : "POSITIVE_INVENTORY_ADJUSTMENT"}
         disabled={disabled}
-        invalid={err?.__typename === "AdjustmentReasonNotProvided" || err?.__typename === "AdjustmentReasonNotValid"}
+        invalid={
+          err?.__typename === "AdjustmentReasonNotProvided" || err?.__typename === "AdjustmentReasonNotValid"
+        }
         width="12rem"
       />
     );
@@ -258,7 +259,9 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
             </Show>
           </label>
           <Show when={props.item?.unitName}>
-            <div class="pb-2 text-sm text-muted">{t("label.unit")}: {props.item?.unitName}</div>
+            <div class="pb-2 text-sm text-muted">
+              {t("label.unit")}: {props.item?.unitName}
+            </div>
           </Show>
         </div>
 
@@ -276,7 +279,9 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
         </For>
         <Show when={banner().length > 0}>
           <For each={banner()}>
-            {(m) => <div class="rounded border border-danger bg-danger/10 px-3 py-1.5 text-sm text-danger">{m}</div>}
+            {(m) => (
+              <div class="rounded border border-danger bg-danger/10 px-3 py-1.5 text-sm text-danger">{m}</div>
+            )}
           </For>
         </Show>
 
@@ -344,10 +349,16 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
                     {(line) => (
                       <tr class="border-b border-line" classList={{ "opacity-50": !line.countThisLine }}>
                         <td class={td}>{countCheckbox(line)}</td>
-                        <td class={td}>{textCell(line, line.batch, (v) => edit({ id: line.id, batch: v }))}</td>
-                        <td class={td}>{dateCell(line, line.expiryDate, (v) => edit({ id: line.id, expiryDate: v }))}</td>
                         <td class={td}>
-                          {dateCell(line, line.manufactureDate, (v) => edit({ id: line.id, manufactureDate: v }))}
+                          {textCell(line, line.batch, (v) => edit({ id: line.id, batch: v }))}
+                        </td>
+                        <td class={td}>
+                          {dateCell(line, line.expiryDate, (v) => edit({ id: line.id, expiryDate: v }))}
+                        </td>
+                        <td class={td}>
+                          {dateCell(line, line.manufactureDate, (v) =>
+                            edit({ id: line.id, manufactureDate: v }),
+                          )}
                         </td>
                         <Show when={prefs().manageVvmStatusForStock && props.item?.isVaccine}>
                           <td class={td}>
@@ -371,7 +382,8 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
                           <span
                             classList={{
                               "rounded border border-danger px-1":
-                                errors.getError({ id: line.id })?.__typename === "SnapshotCountCurrentCountMismatchLine",
+                                errors.getError({ id: line.id })?.__typename ===
+                                "SnapshotCountCurrentCountMismatchLine",
                             }}
                           >
                             {line.snapshotNumberOfPacks}
@@ -382,13 +394,21 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
                             line,
                             line.countedNumberOfPacks,
                             (v) => edit(countedChangePatch(line, v)),
-                            { error: errors.getError({ id: line.id })?.__typename === "StockLineReducedBelowZero" },
+                            {
+                              error:
+                                errors.getError({ id: line.id })?.__typename === "StockLineReducedBelowZero",
+                            },
                           )}
                         </td>
                         <td class={td}>
-                          {numberCell(line, line.volumePerPack, (v) => edit({ id: line.id, volumePerPack: v ?? 0 }), {
-                            step: "0.0001",
-                          })}
+                          {numberCell(
+                            line,
+                            line.volumePerPack,
+                            (v) => edit({ id: line.id, volumePerPack: v ?? 0 }),
+                            {
+                              step: "0.0001",
+                            },
+                          )}
                         </td>
                         <td class={td}>{reasonCell(line)}</td>
                       </tr>
@@ -414,16 +434,28 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
                     {(line) => (
                       <tr class="border-b border-line" classList={{ "opacity-50": !line.countThisLine }}>
                         <td class={td}>{countCheckbox(line)}</td>
-                        <td class={td}>{textCell(line, line.batch, (v) => edit({ id: line.id, batch: v }))}</td>
                         <td class={td}>
-                          {numberCell(line, line.sellPricePerPack, (v) => edit({ id: line.id, sellPricePerPack: v }), {
-                            step: "0.01",
-                          })}
+                          {textCell(line, line.batch, (v) => edit({ id: line.id, batch: v }))}
                         </td>
                         <td class={td}>
-                          {numberCell(line, line.costPricePerPack, (v) => edit({ id: line.id, costPricePerPack: v }), {
-                            step: "0.01",
-                          })}
+                          {numberCell(
+                            line,
+                            line.sellPricePerPack,
+                            (v) => edit({ id: line.id, sellPricePerPack: v }),
+                            {
+                              step: "0.01",
+                            },
+                          )}
+                        </td>
+                        <td class={td}>
+                          {numberCell(
+                            line,
+                            line.costPricePerPack,
+                            (v) => edit({ id: line.id, costPricePerPack: v }),
+                            {
+                              step: "0.01",
+                            },
+                          )}
                         </td>
                       </tr>
                     )}
@@ -452,7 +484,9 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
                     {(line) => (
                       <tr class="border-b border-line" classList={{ "opacity-50": !line.countThisLine }}>
                         <td class={td}>{countCheckbox(line)}</td>
-                        <td class={td}>{textCell(line, line.batch, (v) => edit({ id: line.id, batch: v }))}</td>
+                        <td class={td}>
+                          {textCell(line, line.batch, (v) => edit({ id: line.id, batch: v }))}
+                        </td>
                         <td class={td}>
                           <LocationSearchInput
                             value={line.location ?? null}
@@ -465,8 +499,19 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
                         <Show when={prefs().allowTrackingOfStockByDonor}>
                           <td class={td}>
                             <DonorSearchInput
-                              value={line.donorId ? { id: line.donorId, name: line.donorName ?? "", code: "", isOnHold: false } : null}
-                              onChange={(d) => edit({ id: line.id, donorId: d?.id ?? null, donorName: d?.name ?? null })}
+                              value={
+                                line.donorId
+                                  ? {
+                                      id: line.donorId,
+                                      name: line.donorName ?? "",
+                                      code: "",
+                                      isOnHold: false,
+                                    }
+                                  : null
+                              }
+                              onChange={(d) =>
+                                edit({ id: line.id, donorId: d?.id ?? null, donorName: d?.name ?? null })
+                              }
                               disabled={!editable(line)}
                               width="11rem"
                             />
@@ -476,13 +521,19 @@ export const StocktakeLineEditModal: Component<Props> = (props) => {
                           <ManufacturerSearchInput
                             value={line.manufacturer ?? null}
                             onChange={(m) =>
-                              edit({ id: line.id, manufacturer: m, ...(line.itemVariant ? { itemVariantId: null } : {}) })
+                              edit({
+                                id: line.id,
+                                manufacturer: m,
+                                ...(line.itemVariant ? { itemVariantId: null } : {}),
+                              })
                             }
                             disabled={!editable(line)}
                             width="11rem"
                           />
                         </td>
-                        <td class={td}>{textCell(line, line.comment, (v) => edit({ id: line.id, comment: v }))}</td>
+                        <td class={td}>
+                          {textCell(line, line.comment, (v) => edit({ id: line.id, comment: v }))}
+                        </td>
                       </tr>
                     )}
                   </For>

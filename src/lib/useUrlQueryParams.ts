@@ -50,8 +50,7 @@ export function useUrlQueryParams(opts?: {
   const defaultPageSize = opts?.pageSize ?? 20;
   const [params, setParams] = useSearchParams();
 
-  const one = (v: string | string[] | undefined): string | undefined =>
-    Array.isArray(v) ? v[0] : v;
+  const one = (v: string | string[] | undefined): string | undefined => (Array.isArray(v) ? v[0] : v);
 
   const pageSize = () => {
     const n = Number(one(params.pageSize));

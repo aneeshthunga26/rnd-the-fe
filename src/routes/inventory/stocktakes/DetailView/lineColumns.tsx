@@ -36,21 +36,18 @@ export const useLineColumns = (): Accessor<ColumnDef<StocktakeLine>[]> => {
 
   // A cell that highlights (danger border) when the line has a matching error.
   const errorCell =
-    (match?: string) =>
-    (ctx: { row: { original: StocktakeLine }; getValue: () => unknown }) => {
+    (match?: string) => (ctx: { row: { original: StocktakeLine }; getValue: () => unknown }) => {
       const err = getError({ id: ctx.row.original.id });
       const highlight = err && (match ? err.__typename === match : true);
       return (
-        <span classList={{ "rounded border border-danger px-1": !!highlight }}>
-          {num(ctx.getValue())}
-        </span>
+        <span classList={{ "rounded border border-danger px-1": !!highlight }}>{num(ctx.getValue())}</span>
       );
     };
 
   // Memoised so the array reference stays stable across unrelated reactive reads
   // (the lines table is virtualized — churning column identity would defeat that);
   // recomputes only when prefs (gated columns) or locale (header t()) change.
-  return createMemo(() => {
+  const columns = createMemo(() => {
     const cols: ColumnDef<StocktakeLine>[] = [
       selectionColumn<StocktakeLine>(),
       {
@@ -91,7 +88,13 @@ export const useLineColumns = (): Accessor<ColumnDef<StocktakeLine>[]> => {
         size: 90,
         enableSorting: false,
       },
-      { id: "packSize", accessorKey: "packSize", header: t("label.pack-size"), size: 90, enableSorting: false },
+      {
+        id: "packSize",
+        accessorKey: "packSize",
+        header: t("label.pack-size"),
+        size: 90,
+        enableSorting: false,
+      },
     ];
 
     if (prefs().manageVaccinesInDoses) {
@@ -173,4 +176,5 @@ export const useLineColumns = (): Accessor<ColumnDef<StocktakeLine>[]> => {
 
     return cols;
   });
+  return columns;
 };
