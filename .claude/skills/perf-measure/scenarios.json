@@ -13,7 +13,7 @@
   "scenarios": [
     {
       "name": "stocktakes-list",
-      "path": "/stocktakes",
+      "path": "/inventory/stocktakes",
       "readySelector": "div[style*=\"translateY\"]",
       "readyMinCount": 20,
       "dataItemCountSelector": "div[style*=\"translateY\"]",
