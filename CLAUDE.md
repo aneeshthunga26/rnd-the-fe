@@ -36,8 +36,8 @@ When goals conflict, state the trade-off explicitly in code review or the PR —
 | Routing | **`@solidjs/router`** | Tiny; gives us URL-as-state for filters (a stated goal in the reference journey). |
 | Table | **`@tanstack/solid-table`** (v8, stable) | Headless (no styling bundle), fully typed, framework-native adapter. Avoid the v9 beta — its API diverges from all the docs. |
 | Virtualization | **`@tanstack/solid-virtual`** | Required for large stocktake-line lists → perf. Virtualize rows from the start. |
-| GraphQL types | **`gql.tada`** + **`graphql-request`** | Full type inference straight from `server/schema.graphql` with **zero generated files** (velocity, maintainability); `graphql-request` is a ~tiny client (small bundle). Alternative if the editor plugin is a pain: graphql-codegen `client` preset. |
-| Data fetching | **Solid's own async** (`createResource` + `<Suspense>`) | Built-in → no extra bundle. Only add `@tanstack/solid-query` if we genuinely need cross-route caching/dedup — justify it first. |
+| GraphQL types | **`gql.tada`** (+ tiny `fetch` transport) | Full type inference straight from the schema with **zero per-operation codegen** (velocity, maintainability). Uses `@0no-co/graphql.web` (~5 KB) instead of `graphql-js` (~40 KB) → small bundle. One build step: `gql.tada generate output` refreshes the schema-introspection `.d.ts` for CI typecheck. Alternative if the editor plugin is a pain: graphql-codegen `client` preset. |
+| Data fetching | **`@tanstack/solid-query`** | The cache/dedup/invalidation layer (mirrors what open-mSupply uses react-query for: refetch-after-mutation). gql.tada's inferred result/variables types flow into `useQuery`'s `queryFn`. ~12 KB gzip, consistent with the TanStack table/virtual stack. Use bare `createResource` only for trivial one-off reads. |
 | Headless UI | **Kobalte** (minimal surface) | Accessible, tree-shakeable; import only what needs a11y/focus management (Dialog, Combobox/Select, Checkbox, NumberField). Plain styled elements for the rest. `corvu` is the fallback. |
 | Theming | **CSS variables + `data-theme`** on `<html>`, mapped through Tailwind `@theme`; a `ThemeProvider` context with a persisted signal | Zero-JS theme swap; instant; no flash. |
 | i18n | **`@solid-primitives/i18n`** | Tiny, reactive, typed dictionaries. Drive `lang`/`dir` on `<html>` from the locale signal. |
@@ -70,9 +70,11 @@ Avoid React-shaped heavyweight state libraries — Solid's signals/stores are th
 - Logical CSS only; `class` not `className`; `classList`/`style` objects for dynamic styling.
 
 **Data** ([`06`](docs/solidjs/06-async-resources-suspense.md), [`07`](docs/solidjs/07-router.md)):
-- All GraphQL is **typed end-to-end** — no untyped queries, no `any` on responses.
-- Fetch with Solid resources; wrap loading/error in `<Suspense>`/`<ErrorBoundary>`.
+- All GraphQL is **typed end-to-end** via `gql.tada` — inline `graphql(\`…\`)` documents, no untyped queries, no `any` on responses.
+- Fetch through `@tanstack/solid-query` (`useQuery` with a `queryKey`); handle loading/error off the query object. `createResource` only for trivial one-off reads.
 - **Filters and selection live in the URL** (search params via `@solidjs/router`) so state is shareable and back/forward works.
+- **`schema.graphql` is a generated artifact** (the open-mSupply Rust server exports it via `export-graphql-schema`). Don't hand-edit it. Refresh our copy with `pnpm schema:pull` (from a sibling `open-msupply` checkout) or `pnpm schema:introspect` (against a running server); both regenerate `graphql-env.d.ts`.
+- **Vertical structure:** one shared `src/graphql/` (init + client + schema + generated env); each feature/vertical owns its own `api.ts` with colocated documents. Share shapes across verticals with gql.tada **fragments** (compose via the `[Fragment]` arg, unmask with `readFragment`) — there is no shared generated types file to maintain.
 
 **State & i18n:**
 - Server data in resources; nested editable UI state (the line-edit modal) in **stores**; simple flags in signals ([`02`](docs/solidjs/02-stores.md)).

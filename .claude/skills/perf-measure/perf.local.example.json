@@ -1,0 +1,10 @@
+{
+  "//": "Copy this to perf.local.json (gitignored) if a scenario needs login/setup. THIS app's stocktakes page needs NO auth (mock API, debug_no_access_control), so this is a placeholder for when a real authenticated server is wired in. NEVER commit real secrets.",
+  "login": {
+    "required": false,
+    "url": null,
+    "username": null,
+    "password": null,
+    "storeId": null
+  }
+}

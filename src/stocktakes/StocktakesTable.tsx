@@ -1,11 +1,11 @@
 import { type Component, For } from "solid-js";
 import { flexRender, type Table } from "@tanstack/solid-table";
 import { createVirtualizer } from "@tanstack/solid-virtual";
-import type { Stocktake } from "../types";
 import { COLUMN_WIDTH } from "./columns";
+import type { StocktakeRow } from "./api";
 
 interface StocktakesTableProps {
-  table: Table<Stocktake>;
+  table: Table<StocktakeRow>;
 }
 
 const ROW_HEIGHT = 32;

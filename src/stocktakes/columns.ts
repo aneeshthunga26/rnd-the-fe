@@ -1,11 +1,11 @@
 import type { ColumnDef } from "@tanstack/solid-table";
-import type { Stocktake } from "../types";
+import type { StocktakeRow } from "./api";
 
 // Column definitions for the stocktakes list. Every column has an explicit `id`
 // (accessorFn columns require it, and column-visibility state is keyed by id).
 // Headers are plain strings and values render raw — no styling/formatting yet.
 
-export const columns: ColumnDef<Stocktake>[] = [
+export const columns: ColumnDef<StocktakeRow>[] = [
   {
     id: "stocktakeNumber",
     accessorKey: "stocktakeNumber",

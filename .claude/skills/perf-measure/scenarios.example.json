@@ -1,0 +1,25 @@
+{
+  "baseUrl": "http://localhost:4173",
+  "buildCommand": "pnpm build",
+  "runCommand": "pnpm preview --port 4173 --strictPort",
+  "resultsDoc": "docs/perf/frontend-runs.html",
+  "credsFile": ".claude/skills/perf-measure/perf.local.json",
+  "defaults": {
+    "cpuThrottle": 6,
+    "networkPreset": "Fast 3G",
+    "runs": 5,
+    "dropWarmup": true
+  },
+  "scenarios": [
+    {
+      "name": "stocktakes-list",
+      "path": "/stocktakes",
+      "//readySignal": "Ready when the first full page of virtualized rows is painted. Rows are the only elements carrying a translateY transform.",
+      "readySelector": "div[style*=\"translateY\"]",
+      "readyMinCount": 20,
+      "dataItemCountSelector": "div[style*=\"translateY\"]",
+      "//dataRequestUrlPattern": "null because the app uses an in-memory mock API (no network data calls). Set to \"/graphql\" once the real open-mSupply server is wired in — then timeToNetworkQuietMs becomes meaningful.",
+      "dataRequestUrlPattern": null
+    }
+  ]
+}

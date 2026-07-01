@@ -1,0 +1,23 @@
+{
+  "baseUrl": "http://localhost:4173",
+  "buildCommand": "pnpm build",
+  "runCommand": "pnpm preview --port 4173 --strictPort",
+  "resultsDoc": "docs/perf/frontend-runs.html",
+  "credsFile": ".claude/skills/perf-measure/perf.local.json",
+  "defaults": {
+    "cpuThrottle": 6,
+    "networkPreset": "Fast 3G",
+    "runs": 5,
+    "dropWarmup": true
+  },
+  "scenarios": [
+    {
+      "name": "stocktakes-list",
+      "path": "/stocktakes",
+      "readySelector": "div[style*=\"translateY\"]",
+      "readyMinCount": 20,
+      "dataItemCountSelector": "div[style*=\"translateY\"]",
+      "dataRequestUrlPattern": null
+    }
+  ]
+}
