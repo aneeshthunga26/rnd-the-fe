@@ -58,7 +58,9 @@ const SORT_KEYS = new Set<StocktakeSortKey>([
 
 // Mobile card for a stocktake row.
 const renderStocktakeCard = (row: StocktakeRow, t: ReturnType<typeof useI18n>["t"], fmt: Formatters) => (
-  <div>
+  // Finalised stocktakes are dimmed — the container's muted colour is inherited
+  // by the number/description; the badge and date keep their own colours.
+  <div classList={{ "text-muted": row.status === "FINALISED" }}>
     <div class="flex items-center justify-between">
       <span class="font-semibold">#{row.stocktakeNumber}</span>
       <span class="rounded-full bg-brand-light px-2 py-0.5 text-xs font-medium text-brand">
@@ -240,7 +242,7 @@ export const ListView: Component = () => {
               >
                 <PlusCircleIcon class="w-5 h-5" />
               </button>
-              <div class="flex items-stretch overflow-hidden rounded-full border border-brand text-brand">
+              <div class="flex h-9 items-stretch overflow-hidden rounded-full border border-brand text-brand">
                 <button
                   type="button"
                   title={t("action.export-csv")}
@@ -317,6 +319,7 @@ export const ListView: Component = () => {
                 table={table}
                 density={density()}
                 renderCard={(row) => renderStocktakeCard(row, t, fmt())}
+                rowClass={(row) => (row.status === "FINALISED" ? "text-muted!" : undefined)}
                 onRowClick={(row) => navigate(`/inventory/stocktakes/${row.id}`)}
               />
               <TablePagination

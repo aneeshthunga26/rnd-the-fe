@@ -27,12 +27,12 @@ export function TablePagination(props: TablePaginationProps): JSX.Element {
   const start = () => (props.total === 0 ? 0 : props.pageIndex * props.pageSize + 1);
   const end = () => Math.min((props.pageIndex + 1) * props.pageSize, props.total);
 
-  // A small window of page numbers around the current page.
+  // A small window of page numbers centered on the current page.
   const pageWindow = () => {
     const count = pageCount();
-    const current = props.pageIndex;
-    const from = Math.max(0, Math.min(current - 2, count - 5));
-    return Array.from({ length: Math.min(5, count) }, (_, i) => from + i);
+    const size = Math.min(5, count);
+    const from = Math.max(0, Math.min(props.pageIndex - 2, count - size));
+    return Array.from({ length: size }, (_, i) => from + i);
   };
 
   const canPrev = () => props.pageIndex > 0;
@@ -42,11 +42,14 @@ export function TablePagination(props: TablePaginationProps): JSX.Element {
     "flex h-8 w-8 items-center justify-center rounded-md text-fg hover:bg-row-hover disabled:opacity-30 disabled:hover:bg-transparent";
 
   return (
-    <div class="flex items-center justify-between px-2 py-3 text-sm text-fg">
-      <span>{t("message.showing-range", { start: start(), end: end(), total: props.total })}</span>
+    <div class="flex flex-col items-center gap-3 px-2 py-3 text-sm text-fg sm:flex-row sm:justify-between sm:gap-4">
+      {/* Range summary and rows-per-page are hidden on mobile — only page nav remains. */}
+      <span class="hidden whitespace-nowrap sm:inline">
+        {t("message.showing-range", { start: start(), end: end(), total: props.total })}
+      </span>
 
-      <div class="flex items-center gap-4">
-        <div class="flex items-center gap-2">
+      <div class="flex flex-col items-center gap-3 sm:flex-row sm:gap-4">
+        <div class="hidden items-center gap-2 whitespace-nowrap sm:flex">
           {t("label.rows-per-page")}
           <Select
             aria-label={t("label.rows-per-page")}
@@ -60,7 +63,8 @@ export function TablePagination(props: TablePaginationProps): JSX.Element {
         </div>
 
         <div class="flex items-center gap-1">
-          <button class={iconBtn} onClick={() => props.onPage(0)} disabled={!canPrev()}>
+          {/* Jump-to-first/last are hidden on narrow phones to keep the row compact. */}
+          <button class={`${iconBtn} hidden sm:flex`} onClick={() => props.onPage(0)} disabled={!canPrev()}>
             <ChevronsLeftIcon class="w-4 h-4" />
           </button>
           <button class={iconBtn} onClick={() => props.onPage(props.pageIndex - 1)} disabled={!canPrev()}>
@@ -85,7 +89,11 @@ export function TablePagination(props: TablePaginationProps): JSX.Element {
           <button class={iconBtn} onClick={() => props.onPage(props.pageIndex + 1)} disabled={!canNext()}>
             <ChevronRightIcon class="w-4 h-4" />
           </button>
-          <button class={iconBtn} onClick={() => props.onPage(pageCount() - 1)} disabled={!canNext()}>
+          <button
+            class={`${iconBtn} hidden sm:flex`}
+            onClick={() => props.onPage(pageCount() - 1)}
+            disabled={!canNext()}
+          >
             <ChevronsRightIcon class="w-4 h-4" />
           </button>
         </div>
