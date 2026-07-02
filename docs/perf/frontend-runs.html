@@ -4,42 +4,139 @@
 <meta charset="utf-8" />
 <title>Frontend perf runs — rnd-the-fe</title>
 <style>
-  body { font: 13px/1.4 system-ui, sans-serif; margin: 24px; color: #111; }
-  h1 { font-size: 18px; }
-  .note { background: #fff8e1; border: 1px solid #ffe082; padding: 8px 12px; border-radius: 6px; max-width: 900px; }
-  table { border-collapse: collapse; margin-top: 16px; font-variant-numeric: tabular-nums; }
-  th, td { border: 1px solid #ddd; padding: 4px 8px; white-space: nowrap; text-align: right; }
-  th { position: sticky; top: 0; background: #f5f5f5; z-index: 1; }
-  td:first-child, td:nth-child(2), th:first-child, th:nth-child(2) { text-align: left; }
-  tbody tr:nth-child(even) { background: #fafafa; }
+  :root {
+    --bg: #f4f5f7; --panel: #fff; --ink: #1f2430; --muted: #6b7280; --line: #e6e8ec;
+    --accent: #2563eb; --accent-soft: rgba(37, 99, 235, 0.07);
+    --g-context: #eef1f5; --g-headline: #fff3e0; --g-network: #e9f6ee;
+    --g-reference: #f1eefb; --g-memory: #e8f2fb; --g-weight: #f7efe9; --g-notes: #f0f2f5;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 32px; background: var(--bg); color: var(--ink);
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 1440px; margin: 0 auto; }
+  h1 { font-size: 22px; font-weight: 650; margin: 0 0 2px; }
+  .sub { color: var(--muted); font-size: 13px; margin: 0 0 20px; }
+  .legend { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 18px; max-width: 980px; font-size: 13px; line-height: 1.65;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04); }
+  .legend strong { color: var(--ink); }
+  .legend code { background: #f0f2f5; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+  .legend .k { display: inline-block; margin-right: 14px; white-space: nowrap; }
+  .legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px;
+    vertical-align: -1px; margin-right: 5px; border: 1px solid rgba(0,0,0,.06); }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.06); overflow: auto; max-height: 82vh; }
+  table { border-collapse: separate; border-spacing: 0; width: 100%;
+    font-variant-numeric: tabular-nums; white-space: nowrap; }
+  th, td { padding: 8px 12px; border-bottom: 1px solid var(--line); text-align: right; }
+  td { color: #374151; }
+  /* sticky two-tier header */
+  thead th { position: sticky; z-index: 2; background: var(--panel); }
+  thead tr.grp th { top: 0; font-size: 10.5px; font-weight: 700; letter-spacing: .07em;
+    text-transform: uppercase; color: #55607a; text-align: center; padding: 7px 12px;
+    border-bottom: 1px solid var(--line); }
+  thead tr.lbl th { top: 34px; font-size: 11.5px; font-weight: 600; color: #4b5563;
+    border-bottom: 2px solid #d7dbe2; }
+  /* group tints on the band row */
+  .grp.g-context { background: var(--g-context); } .grp.g-headline { background: var(--g-headline); }
+  .grp.g-network { background: var(--g-network); } .grp.g-reference { background: var(--g-reference); }
+  .grp.g-memory { background: var(--g-memory); } .grp.g-weight { background: var(--g-weight); }
+  .grp.g-notes { background: var(--g-notes); }
+  /* body rows */
+  tbody tr:nth-child(even) { background: #fafbfc; }
+  tbody tr:hover { background: #eef4ff; }
+  tbody tr:last-child td { border-bottom: none; }
+  /* left-align the text columns (both label header + body) */
+  td:nth-child(1), .lbl:nth-child(1), td:nth-child(2), .lbl:nth-child(2), td:nth-child(3), .lbl:nth-child(3), td:nth-child(4), .lbl:nth-child(4), td:nth-child(5), .lbl:nth-child(5), td:nth-child(8), .lbl:nth-child(8), td:nth-child(9), .lbl:nth-child(9), td:nth-child(27), .lbl:nth-child(27) { text-align: left; }
+  /* headline emphasis */
+  td:nth-child(12), td:nth-child(13) { background: var(--accent-soft); font-weight: 650; color: #0f1b3d; }
+  .lbl:nth-child(12), .lbl:nth-child(13) { color: var(--accent); }
+  tbody tr:hover td:nth-child(12), tbody tr:hover td:nth-child(13) { background: rgba(37,99,235,.12); }
+  /* commit is a stable id → monospace */
+  td:nth-child(4) { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; }
+  /* notes: wrap + de-emphasise */
+  td:nth-child(27) { white-space: normal; min-width: 320px; max-width: 460px;
+    color: var(--muted); font-size: 12px; line-height: 1.5; }
+  /* --- production dependencies section --- */
+  .h2 { font-size: 16px; font-weight: 650; margin: 28px 0 3px; }
+  .h2sub { color: var(--muted); font-weight: 400; font-size: 13px; }
+  .deps { max-width: 720px; }
+  .deps table { width: 100%; }
+  .deps th { text-align: right; font-size: 11.5px; font-weight: 600; color: #4b5563;
+    border-bottom: 2px solid #d7dbe2; }
+  .deps th:first-child, .deps th:nth-child(2), .deps th.barh { text-align: left; }
+  .deps td { text-align: right; }
+  .deps td.pkg { text-align: left; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; color: var(--ink); }
+  .deps td.ver { text-align: left; color: var(--muted); font-size: 12px; }
+  .deps td.gz { font-weight: 650; color: var(--accent); }
+  .deps td.bar { width: 240px; padding-right: 16px; }
+  .deps .barfill { display: block; height: 14px; border-radius: 3px;
+    background: linear-gradient(90deg, #60a5fa, #2563eb); min-width: 2px; }
+  .deps tbody tr:hover { background: #f6f9ff; }
+  .deps tr.total td { font-weight: 650; color: var(--ink); border-top: 2px solid #d7dbe2; border-bottom: none; }
+  .deps tr.total td.gz { color: var(--accent); }
 </style>
 </head>
 <body>
+<div class="wrap">
 <h1>Frontend performance runs — rnd-the-fe</h1>
-<div class="note">
-  <strong>How to read this:</strong> the headline ranking metric is
-  <strong>TTData</strong> (navigation → the "page ready" content signal) and, when a
-  real network layer exists, <strong>TTNetQuiet</strong> (data layer idle). The browser
-  <code>load</code> event and <strong>LCP</strong> are recorded for reference only —
-  <strong>LCP is often blank for SPAs, which is expected</strong>, not an error, because
-  the largest content is client-rendered after first paint. All timings are
-  <strong>median of N (min–max)</strong> with the warm-up run dropped. Two rows are only
-  comparable when Machine, CPU×, Network, Cache and Items match. Newest rows at the bottom.
+<p class="sub">Stocktakes screen · warm cache · 6× CPU / Fast 3G · median of N (min–max), warm-up dropped · newest at the bottom.</p>
+<div class="legend">
+  <strong>How to read this.</strong> The headline ranking metric is <strong>TTData</strong>
+  (navigation → the "page ready" content signal); once a real network layer exists,
+  <strong>TTNetQuiet</strong> (data layer idle) is the primary rank. The <code>load</code> event and
+  <strong>LCP</strong> are reference-only — <strong>LCP is often blank for SPAs</strong> (expected, not an
+  error), since the largest content is client-rendered after first paint. Two rows are comparable only when
+  <strong>Machine, CPU×, Network, Cache and Items</strong> match; rows tagged <code>[ON BATTERY]</code> are
+  not comparable to AC rows.
+  <div style="margin-top:10px">
+    <span class="k"><span class="sw" style="background:var(--g-headline)"></span>Headline</span>
+    <span class="k"><span class="sw" style="background:var(--g-network)"></span>Network</span>
+    <span class="k"><span class="sw" style="background:var(--g-reference)"></span>Reference</span>
+    <span class="k"><span class="sw" style="background:var(--g-memory)"></span>Memory</span>
+    <span class="k"><span class="sw" style="background:var(--g-weight)"></span>Weight</span>
+  </div>
 </div>
+<div class="card">
 <table>
-<thead><tr><th title="context">UTC</th><th title="context">Scenario</th><th title="context">Branch</th><th title="context">Commit</th><th title="context">Machine</th><th title="context">Chrome</th><th title="context">CPU×</th><th title="context">Network</th><th title="context">Cache</th><th title="context">Items</th><th title="context">N</th><th title="headline">TTData (ms)</th><th title="headline">TTNetQuiet (ms)</th><th title="network">#Data reqs</th><th title="network">Slowest req (ms)</th><th title="reference">TTFB (ms)</th><th title="reference">FCP (ms)</th><th title="reference">load (ms)</th><th title="reference">CLS</th><th title="reference">LCP (ms)</th><th title="memory">JS heap (MB)</th><th title="memory">Heap snap (MB)</th><th title="weight">DOM nodes</th><th title="weight">#Resources</th><th title="weight">Transfer (KB)</th><th title="context">Notes</th></tr></thead>
+<thead>
+<tr class="grp"><th class="grp g-context" colspan="11">Context</th><th class="grp g-headline" colspan="2">Headline</th><th class="grp g-network" colspan="2">Network</th><th class="grp g-reference" colspan="5">Reference (not ranked)</th><th class="grp g-memory" colspan="2">Memory</th><th class="grp g-weight" colspan="4">Weight</th><th class="grp g-notes" colspan="1">Notes</th></tr>
+<tr class="lbl"><th class="lbl g-context">UTC</th><th class="lbl g-context">Scenario</th><th class="lbl g-context">Branch</th><th class="lbl g-context">Commit</th><th class="lbl g-context">Machine</th><th class="lbl g-context">Chrome</th><th class="lbl g-context">CPU×</th><th class="lbl g-context">Network</th><th class="lbl g-context">Cache</th><th class="lbl g-context">Items</th><th class="lbl g-context">N</th><th class="lbl g-headline">TTData (ms)</th><th class="lbl g-headline">TTNetQuiet (ms)</th><th class="lbl g-network">#Data reqs</th><th class="lbl g-network">Slowest req (ms)</th><th class="lbl g-reference">TTFB (ms)</th><th class="lbl g-reference">FCP (ms)</th><th class="lbl g-reference">load (ms)</th><th class="lbl g-reference">CLS</th><th class="lbl g-reference">LCP (ms)</th><th class="lbl g-memory">JS heap (MB)</th><th class="lbl g-memory">Heap snap (MB)</th><th class="lbl g-weight">Initial JS (KB gz)</th><th class="lbl g-weight">DOM nodes</th><th class="lbl g-weight">#Resources</th><th class="lbl g-weight">Transfer (KB)</th><th class="lbl g-notes">Notes</th></tr>
+</thead>
 <tbody>
-<tr><td>2026-07-01T00:45:27.284Z</td><td>stocktakes-list</td><td>performance-test</td><td>1187951</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>1459 (1449–1467)</td><td>—</td><td>0</td><td>—</td><td>1</td><td>1216</td><td>1194</td><td>0</td><td>1216</td><td>4.4</td><td>2.8</td><td>166</td><td>1</td><td>0</td><td>prod build; in-memory mock API (no network layer → TTNetQuiet n/a); 200-row dataset, PAGE_SIZE 20 → 20 virtualized rows; collector v1.0.0</td></tr>
-<tr><td>2026-07-01T01:00:14.722Z</td><td>stocktakes-list</td><td>performance-test</td><td>7a8081b</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>1821 (1805–1837)</td><td>1775 (1758–1790)</td><td>1</td><td>583 (580–591)</td><td>2</td><td>1244</td><td>1210</td><td>0</td><td>1856</td><td>4.3</td><td>2.7</td><td>166</td><td>2</td><td>0</td><td>prod build; REAL open-mSupply GraphQL server (localhost:8000, USE_MOCK=false); 66-row dataset, PAGE_SIZE 20 -&gt; 20 virtualized rows; 1 /graphql req; bundle 50.4KB gz (+15.5 vs mock baseline); collector v1.0.0</td></tr>
-<tr><td>2026-07-01T03:17:21.380Z</td><td>stocktakes-list</td><td>performance-test</td><td>411bb1f</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>1877 (1841–1892)</td><td>1823 (1786–1838)</td><td>1</td><td>589 (586–597)</td><td>2</td><td>1284</td><td>1258</td><td>0</td><td>1912</td><td>7</td><td>5.6</td><td>351</td><td>3</td><td>1</td><td>prod build; real GraphQL server; full app shell + routing + Tailwind CSS; 1440x900 desktop viewport (mobile &lt;768px = cards, no virtualization); path /inventory/stocktakes; 66-row dataset, PAGE_SIZE 20 -&gt; 20 virt rows; 1 /graphql req; bundle 59KB gz JS + 4.1KB gz CSS; collector v1.0.0</td></tr>
-<tr><td>2026-07-01T03:30:13.634Z</td><td>stocktakes-list</td><td>performance-test</td><td>723a441</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>2440 (2416–2449)</td><td>2383 (2360–2391)</td><td>1</td><td>580 (573–589)</td><td>2</td><td>1244</td><td>1218</td><td>0</td><td>2484</td><td>5.4</td><td>3.6</td><td>351</td><td>4</td><td>1</td><td>prod build; real GraphQL; LAZY route imports (registry uses lazy()). Heap 3.6MB (down 2.0MB vs eager 5.6MB) + initial bundle split (index 32.8KB gz + StocktakesScreen chunk 28KB gz). BUT TTData +563ms vs eager (1877-&gt;2440): the landing screen's chunk resolves serially after index.js, deferring its /graphql fetch. 1440x900; 66-row dataset PAGE_SIZE 20; collector v1.0.0</td></tr>
-<tr><td>2026-07-01T05:07:28.283Z</td><td>stocktakes-list</td><td>performance-test</td><td>15f2d64</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>2440 (2411–2473)</td><td>2457 (2431–2492)</td><td>2</td><td>623 (617–641)</td><td>3</td><td>1260</td><td>1235</td><td>0</td><td>2476</td><td>7.1</td><td>4.7</td><td>370</td><td>6</td><td>1</td><td>prod; real GraphQL; lazy routes; FULL stocktake functionality ported (DetailView + line-edit modal + create/update/delete). 2 /graphql reqs now (list + 2nd query); TTNetQuiet slightly &gt; TTData. Kobalte (~62KB gz 'columns' shared chunk) loads on LIST route via static import of CreateStocktakeModal/ConfirmModal in ListView. Heap 4.7MB (up from 3.6 lazy). List route: index 35 + StocktakesScreen 13.5 + kobalte 62 + css 5.5 gz. 1440x900; collector v1.0.0</td></tr>
-<tr><td>2026-07-01T06:48:42.609Z</td><td>stocktakes-list</td><td>performance-test</td><td>348a8e1</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>2465 (2439–2479)</td><td>2482 (2457–2495)</td><td>2</td><td>633 (624–646)</td><td>1</td><td>1256</td><td>1235</td><td>0</td><td>2500</td><td>7.7</td><td>5</td><td>369</td><td>7</td><td>1</td><td>[ON BATTERY] prod; real GraphQL; lazy routes. Added i18n (en/fr/ar dicts ALL statically imported in I18nProvider) + theming + shortcuts/command-palette, wired as app-root providers -&gt; on every route's critical path. Main index chunk 65KB gz (up from 35). List route: index 65 + StocktakesScreen 12.5 + kobalte 43 + Button 3 + css 5.7 gz; 2 /graphql reqs. TTData flat vs prev (2465 vs 2440, within noise) - providers ~free at warm runtime; cost is bundle. Heap 5.0MB (up from 4.7). 1440x900; collector v1.0.0</td></tr>
-<tr><td>2026-07-01T07:23:33.429Z</td><td>stocktakes-list</td><td>performance-test</td><td>38d7e29</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>2472 (2442–2479)</td><td>2489 (2460–2498)</td><td>2</td><td>637 (621–647)</td><td>2</td><td>1260</td><td>1237</td><td>0</td><td>2504</td><td>7.7</td><td>5</td><td>369</td><td>7</td><td>1</td><td>[ON BATTERY] prod; real GraphQL; lazy routes. Structure refactor (presentational/domain split, screen folders, query invalidation, dropdown caps). Perf-neutral: TTData 2472 vs prev 2465, all metrics within noise; bundle unchanged (index 65 + StocktakesScreen 12.6 + kobalte 43 + Button 3 + css 5.7 gz), same 2 /graphql reqs, heap 5.0MB. 1440x900; collector v1.0.0</td></tr>
-<tr><td>2026-07-01T08:42:55.181Z</td><td>stocktakes-list</td><td>performance-test</td><td>3619c65</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>2445 (2433–2489)</td><td>2460 (2458–2509)</td><td>2</td><td>643 (614–651)</td><td>2</td><td>1244</td><td>1224</td><td>0</td><td>2476</td><td>7.4</td><td>5</td><td>369</td><td>7</td><td>1</td><td>[ON BATTERY] prod; real GraphQL; lazy routes. PERF FIX: lazy i18n dicts (only en static; fr/ar now on-demand chunks 2.7/2.8KB gz) + lazy command palette (1.6KB gz chunk) + ESLint/Prettier. Root index chunk 65-&gt;61KB gz (fr/ar/palette off the always-on path). Warm TTData flat (2445 vs 2472, within noise) - saving is cold-load/root-parse + non-en users, invisible on warm English run; dominant costs (2 /graphql reqs + 43KB Kobalte still static on list) unchanged. Heap 5.0MB. Kobalte-on-list (lazy modals) still open. 1440x900; collector v1.0.0</td></tr>
-<tr><td>2026-07-01T09:31:39.431Z</td><td>stocktakes-list</td><td>performance-test</td><td>9d6d78a</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>2468 (2435–2504)</td><td>2485 (2453–2521)</td><td>2</td><td>658 (644–663)</td><td>1</td><td>1256</td><td>1230</td><td>0</td><td>2496</td><td>8.1</td><td>5.1</td><td>383</td><td>7</td><td>1</td><td>[ON BATTERY] FINAL run. Table styling + alternating row colors (cosmetic). Perf-neutral: TTData 2468 vs prev 2445, within noise. DOM 383 (up from 369 - alternating-row wrappers). Bundle: index 61 + StocktakesScreen 14.8 (+2 styling) + kobalte 43 + css gz; same 2 /graphql reqs; heap 5.1MB. 1440x900; collector v1.0.0</td></tr>
+<tr><td>2026-07-01T00:45:27.284Z</td><td>stocktakes-list</td><td>performance-test</td><td>1187951</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>1459 (1449–1467)</td><td>—</td><td>0</td><td>—</td><td>1</td><td>1216</td><td>1194</td><td>0</td><td>1216</td><td>4.4</td><td>2.8</td><td>34.9</td><td>166</td><td>1</td><td>0</td><td>prod build; in-memory mock API (no network layer → TTNetQuiet n/a); 200-row dataset, PAGE_SIZE 20 → 20 virtualized rows; collector v1.0.0</td></tr>
+<tr><td>2026-07-01T01:00:14.722Z</td><td>stocktakes-list</td><td>performance-test</td><td>7a8081b</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>1821 (1805–1837)</td><td>1775 (1758–1790)</td><td>1</td><td>583 (580–591)</td><td>2</td><td>1244</td><td>1210</td><td>0</td><td>1856</td><td>4.3</td><td>2.7</td><td>50.4</td><td>166</td><td>2</td><td>0</td><td>prod build; REAL open-mSupply GraphQL server (localhost:8000, USE_MOCK=false); 66-row dataset, PAGE_SIZE 20 -&gt; 20 virtualized rows; 1 /graphql req; bundle 50.4KB gz (+15.5 vs mock baseline); collector v1.0.0</td></tr>
+<tr><td>2026-07-01T03:17:21.380Z</td><td>stocktakes-list</td><td>performance-test</td><td>411bb1f</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>1877 (1841–1892)</td><td>1823 (1786–1838)</td><td>1</td><td>589 (586–597)</td><td>2</td><td>1284</td><td>1258</td><td>0</td><td>1912</td><td>7</td><td>5.6</td><td>59</td><td>351</td><td>3</td><td>1</td><td>prod build; real GraphQL server; full app shell + routing + Tailwind CSS; 1440x900 desktop viewport (mobile &lt;768px = cards, no virtualization); path /inventory/stocktakes; 66-row dataset, PAGE_SIZE 20 -&gt; 20 virt rows; 1 /graphql req; bundle 59KB gz JS + 4.1KB gz CSS; collector v1.0.0</td></tr>
+<tr><td>2026-07-01T03:30:13.634Z</td><td>stocktakes-list</td><td>performance-test</td><td>723a441</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>2440 (2416–2449)</td><td>2383 (2360–2391)</td><td>1</td><td>580 (573–589)</td><td>2</td><td>1244</td><td>1218</td><td>0</td><td>2484</td><td>5.4</td><td>3.6</td><td>32.8</td><td>351</td><td>4</td><td>1</td><td>prod build; real GraphQL; LAZY route imports (registry uses lazy()). Heap 3.6MB (down 2.0MB vs eager 5.6MB) + initial bundle split (index 32.8KB gz + StocktakesScreen chunk 28KB gz). BUT TTData +563ms vs eager (1877-&gt;2440): the landing screen's chunk resolves serially after index.js, deferring its /graphql fetch. 1440x900; 66-row dataset PAGE_SIZE 20; collector v1.0.0</td></tr>
+<tr><td>2026-07-01T05:07:28.283Z</td><td>stocktakes-list</td><td>performance-test</td><td>15f2d64</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>2440 (2411–2473)</td><td>2457 (2431–2492)</td><td>2</td><td>623 (617–641)</td><td>3</td><td>1260</td><td>1235</td><td>0</td><td>2476</td><td>7.1</td><td>4.7</td><td>35</td><td>370</td><td>6</td><td>1</td><td>prod; real GraphQL; lazy routes; FULL stocktake functionality ported (DetailView + line-edit modal + create/update/delete). 2 /graphql reqs now (list + 2nd query); TTNetQuiet slightly &gt; TTData. Kobalte (~62KB gz 'columns' shared chunk) loads on LIST route via static import of CreateStocktakeModal/ConfirmModal in ListView. Heap 4.7MB (up from 3.6 lazy). List route: index 35 + StocktakesScreen 13.5 + kobalte 62 + css 5.5 gz. 1440x900; collector v1.0.0</td></tr>
+<tr><td>2026-07-01T06:48:42.609Z</td><td>stocktakes-list</td><td>performance-test</td><td>348a8e1</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>2465 (2439–2479)</td><td>2482 (2457–2495)</td><td>2</td><td>633 (624–646)</td><td>1</td><td>1256</td><td>1235</td><td>0</td><td>2500</td><td>7.7</td><td>5</td><td>65</td><td>369</td><td>7</td><td>1</td><td>[ON BATTERY] prod; real GraphQL; lazy routes. Added i18n (en/fr/ar dicts ALL statically imported in I18nProvider) + theming + shortcuts/command-palette, wired as app-root providers -&gt; on every route's critical path. Main index chunk 65KB gz (up from 35). List route: index 65 + StocktakesScreen 12.5 + kobalte 43 + Button 3 + css 5.7 gz; 2 /graphql reqs. TTData flat vs prev (2465 vs 2440, within noise) - providers ~free at warm runtime; cost is bundle. Heap 5.0MB (up from 4.7). 1440x900; collector v1.0.0</td></tr>
+<tr><td>2026-07-01T07:23:33.429Z</td><td>stocktakes-list</td><td>performance-test</td><td>38d7e29</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>2472 (2442–2479)</td><td>2489 (2460–2498)</td><td>2</td><td>637 (621–647)</td><td>2</td><td>1260</td><td>1237</td><td>0</td><td>2504</td><td>7.7</td><td>5</td><td>65</td><td>369</td><td>7</td><td>1</td><td>[ON BATTERY] prod; real GraphQL; lazy routes. Structure refactor (presentational/domain split, screen folders, query invalidation, dropdown caps). Perf-neutral: TTData 2472 vs prev 2465, all metrics within noise; bundle unchanged (index 65 + StocktakesScreen 12.6 + kobalte 43 + Button 3 + css 5.7 gz), same 2 /graphql reqs, heap 5.0MB. 1440x900; collector v1.0.0</td></tr>
+<tr><td>2026-07-01T08:42:55.181Z</td><td>stocktakes-list</td><td>performance-test</td><td>3619c65</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>2445 (2433–2489)</td><td>2460 (2458–2509)</td><td>2</td><td>643 (614–651)</td><td>2</td><td>1244</td><td>1224</td><td>0</td><td>2476</td><td>7.4</td><td>5</td><td>61</td><td>369</td><td>7</td><td>1</td><td>[ON BATTERY] prod; real GraphQL; lazy routes. PERF FIX: lazy i18n dicts (only en static; fr/ar now on-demand chunks 2.7/2.8KB gz) + lazy command palette (1.6KB gz chunk) + ESLint/Prettier. Root index chunk 65-&gt;61KB gz (fr/ar/palette off the always-on path). Warm TTData flat (2445 vs 2472, within noise) - saving is cold-load/root-parse + non-en users, invisible on warm English run; dominant costs (2 /graphql reqs + 43KB Kobalte still static on list) unchanged. Heap 5.0MB. Kobalte-on-list (lazy modals) still open. 1440x900; collector v1.0.0</td></tr>
+<tr><td>2026-07-01T09:31:39.431Z</td><td>stocktakes-list</td><td>performance-test</td><td>9d6d78a</td><td>Apple M3 Pro · 12 cores · Darwin 25.3.0</td><td>149.0.0.0</td><td>6</td><td>Fast 3G</td><td>warm</td><td>20</td><td>5</td><td>2468 (2435–2504)</td><td>2485 (2453–2521)</td><td>2</td><td>658 (644–663)</td><td>1</td><td>1256</td><td>1230</td><td>0</td><td>2496</td><td>8.1</td><td>5.1</td><td>61</td><td>383</td><td>7</td><td>1</td><td>[ON BATTERY] FINAL run. Table styling + alternating row colors (cosmetic). Perf-neutral: TTData 2468 vs prev 2445, within noise. DOM 383 (up from 369 - alternating-row wrappers). Bundle: index 61 + StocktakesScreen 14.8 (+2 styling) + kobalte 43 + css gz; same 2 /graphql reqs; heap 5.1MB. 1440x900; collector v1.0.0</td></tr>
 <!-- PERF_ROWS -->
 </tbody>
 </table>
+</div>
+<h2 class="h2">Production dependencies <span class="h2sub">— standalone gzipped size</span></h2>
+<p class="sub">Each package bundled on its own (esbuild --bundle --minify (peers external, import *)): its <strong>full-package</strong> cost,
+not the tree-shaken slice this app actually ships. Sorted by gzipped size. Snapshot at commit <code>9d6d78a</code>.</p>
+<div class="card deps">
+<table>
+<thead><tr class="lbl"><th>Package</th><th>Version</th><th>Min (KB)</th><th>Gzip (KB)</th><th class="barh">Relative (gz)</th></tr></thead>
+<tbody>
+<tr class="dep"><td class="pkg">@kobalte/core</td><td class="ver">0.13.11</td><td>247.2</td><td class="gz">72.4</td><td class="bar"><span class="barfill" style="width:100.0%"></span></td></tr>
+<tr class="dep"><td class="pkg">@tanstack/solid-table</td><td class="ver">8.21.3</td><td>56.8</td><td class="gz">15.3</td><td class="bar"><span class="barfill" style="width:21.1%"></span></td></tr>
+<tr class="dep"><td class="pkg">@tanstack/solid-query</td><td class="ver">5.101.2</td><td>45.2</td><td class="gz">13.6</td><td class="bar"><span class="barfill" style="width:18.8%"></span></td></tr>
+<tr class="dep"><td class="pkg">@solidjs/router</td><td class="ver">0.15.4</td><td>23.4</td><td class="gz">9.4</td><td class="bar"><span class="barfill" style="width:13.0%"></span></td></tr>
+<tr class="dep"><td class="pkg">solid-js</td><td class="ver">1.9.13</td><td>21.7</td><td class="gz">8.4</td><td class="bar"><span class="barfill" style="width:11.6%"></span></td></tr>
+<tr class="dep"><td class="pkg">@tanstack/solid-virtual</td><td class="ver">3.13.31</td><td>23.1</td><td class="gz">7.1</td><td class="bar"><span class="barfill" style="width:9.8%"></span></td></tr>
+<tr class="dep"><td class="pkg">@0no-co/graphql.web</td><td class="ver">1.3.2</td><td>11.8</td><td class="gz">3.9</td><td class="bar"><span class="barfill" style="width:5.4%"></span></td></tr>
+<tr class="dep"><td class="pkg">@solid-primitives/i18n</td><td class="ver">2.2.1</td><td>1.6</td><td class="gz">0.7</td><td class="bar"><span class="barfill" style="width:1.0%"></span></td></tr>
+<tr class="dep"><td class="pkg">gql.tada</td><td class="ver">1.11.2</td><td>1.2</td><td class="gz">0.7</td><td class="bar"><span class="barfill" style="width:0.9%"></span></td></tr>
+<tr class="total"><td class="pkg">Total (9 deps)</td><td></td><td>432.2</td><td class="gz">131.5</td><td></td></tr>
+</tbody>
+</table>
+</div>
+</div>
 </body>
 </html>
